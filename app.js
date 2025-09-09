@@ -55,6 +55,39 @@ const TROPHIES = [
     { id: "table-master", name: "Tabell-mester", emoji: "📚", description: "Fullfør alle tabeller 2-10" }
 ];
 
+// Brukerhåndteringsfunksjoner
+const getUserData = (userName) => {
+    const data = localStorage.getItem(`gangetabell-user-${userName}`);
+    return data ? JSON.parse(data) : null;
+};
+
+const saveUserData = (userName, data) => {
+    localStorage.setItem(`gangetabell-user-${userName}`, JSON.stringify(data));
+};
+
+const getAllUsers = () => {
+    const users = [];
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('gangetabell-user-')) {
+            const userName = key.replace('gangetabell-user-', '');
+            const userData = getUserData(userName);
+            if (userData) {
+                users.push({ name: userName, ...userData });
+            }
+        }
+    }
+    return users;
+};
+
+const getCurrentUser = () => {
+    return localStorage.getItem('gangetabell-current-user');
+};
+
+const setCurrentUser = (userName) => {
+    localStorage.setItem('gangetabell-current-user', userName);
+};
+
 // Hjelpefunksjoner
 const getCurrentLevel = (score) => {
     for (let i = LEVELS.length - 1; i >= 0; i--) {
@@ -157,8 +190,117 @@ const ConfettiLayer = ({ burst }) => {
     );
 };
 
+// Brukervalg komponent
+const UserSelect = ({ onUserSelect, onNewUser }) => {
+    const [users, setUsers] = useState([]);
+    const [showNewUserModal, setShowNewUserModal] = useState(false);
+    const [newUserName, setNewUserName] = useState('');
+
+    useEffect(() => {
+        setUsers(getAllUsers());
+    }, []);
+
+    const handleNewUser = () => {
+        if (newUserName.trim()) {
+            const userName = newUserName.trim();
+            const userData = {
+                score: 0,
+                currentAvatar: AVATARS[0],
+                currentTheme: THEMES[0],
+                isMuted: false,
+                soundVolume: 0.3,
+                soundType: 'soft',
+                soundFrequency: 'normal',
+                powerUps: [],
+                stickers: [],
+                trophies: [],
+                stats: {
+                    totalCorrect: 0,
+                    totalWrong: 0,
+                    maxStreak: 0,
+                    fastestAnswer: 999999,
+                    dailyCorrect: 0
+                },
+                createdAt: new Date().toISOString()
+            };
+            saveUserData(userName, userData);
+            setCurrentUser(userName);
+            onUserSelect(userName, userData);
+            setShowNewUserModal(false);
+            setNewUserName('');
+        }
+    };
+
+    return (
+        <div className="min-h-screen gradient-bg flex items-center justify-center p-4">
+            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-8 max-w-2xl w-full">
+                <h1 className="text-4xl font-bold text-white text-center mb-8">
+                    🎯 Velg Bruker
+                </h1>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    {users.map(user => (
+                        <button
+                            key={user.name}
+                            onClick={() => onUserSelect(user.name, user)}
+                            className="bg-white/30 hover:bg-white/50 text-white p-4 rounded-xl transition-all duration-200 text-left"
+                        >
+                            <div className="flex items-center gap-3">
+                                <span className="text-3xl">{user.currentAvatar?.emoji || '👤'}</span>
+                                <div>
+                                    <h3 className="text-lg font-bold">{user.name}</h3>
+                                    <p className="text-sm opacity-80">
+                                        {getCurrentLevel(user.score || 0).emoji} {getCurrentLevel(user.score || 0).name} · {user.score || 0} poeng
+                                    </p>
+                                </div>
+                            </div>
+                        </button>
+                    ))}
+                </div>
+
+                <button
+                    onClick={() => setShowNewUserModal(true)}
+                    className="w-full bg-green-500 hover:bg-green-600 text-white py-4 rounded-xl font-bold text-lg transition-all duration-200"
+                >
+                    ➕ Ny Bruker
+                </button>
+
+                {showNewUserModal && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+                        <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 max-w-md w-full">
+                            <h3 className="text-xl font-bold text-white mb-4">Ny Bruker</h3>
+                            <input
+                                type="text"
+                                value={newUserName}
+                                onChange={(e) => setNewUserName(e.target.value)}
+                                placeholder="Skriv inn navn..."
+                                className="w-full p-3 rounded-lg bg-white/30 text-white placeholder-white/70 mb-4"
+                                onKeyPress={(e) => e.key === 'Enter' && handleNewUser()}
+                            />
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={handleNewUser}
+                                    className="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-bold"
+                                >
+                                    Opprett
+                                </button>
+                                <button
+                                    onClick={() => setShowNewUserModal(false)}
+                                    className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 rounded-lg font-bold"
+                                >
+                                    Avbryt
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
 // FORENKLET StartMenu komponent
-const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, setIsMuted, currentAvatar, setCurrentAvatar, currentTheme, setCurrentTheme, powerUps, usePowerUp, dailyChallenge, soundVolume, setSoundVolume, soundType, setSoundType, soundFrequency, setSoundFrequency, playSfx }) => {
+const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, setIsMuted, currentAvatar, setCurrentAvatar, currentTheme, setCurrentTheme, powerUps, usePowerUp, dailyChallenge, soundVolume, setSoundVolume, soundType, setSoundType, soundFrequency, setSoundFrequency, playSfx, currentUser, onSwitchUser }) => {
     const [selectedTable, setSelectedTable] = useState(null);
     const [showSettings, setShowSettings] = useState(false);
     const [showAvatarSelect, setShowAvatarSelect] = useState(false);
@@ -184,7 +326,7 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                 <div className="flex items-center gap-3">
                     <span className="text-3xl">{currentAvatar.emoji}</span>
                     <div className="text-left">
-                        <p className="text-lg text-white font-bold">{currentAvatar.name}</p>
+                        <p className="text-lg text-white font-bold">{currentUser || 'Bruker'}</p>
                         <p className="text-base text-white">
                             {currentLevel.emoji} {currentLevel.name} · <span className="font-bold">{score}</span> poeng
                         </p>
@@ -204,6 +346,13 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                         aria-label="Innstillinger"
                     >
                         ⚙️
+                    </button>
+                    <button
+                        onClick={onSwitchUser}
+                        className="px-3 py-2 rounded-lg text-white font-bold transition-all duration-200 bg-blue-600 hover:bg-blue-700"
+                        aria-label="Bytt bruker"
+                    >
+                        👤
                     </button>
                 </div>
             </div>
@@ -312,28 +461,28 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                         <button
                             onClick={() => setShowAvatarSelect(!showAvatarSelect)}
                             className="p-2 rounded-lg text-white font-bold transition-all duration-200 bg-blue-500 hover:bg-blue-600"
-                        >
-                            👤 Avatars
-                        </button>
-                        <button
-                            onClick={() => setShowThemeSelect(!showThemeSelect)}
+                >
+                    👤 Avatars
+                </button>
+                <button
+                    onClick={() => setShowThemeSelect(!showThemeSelect)}
                             className="p-2 rounded-lg text-white font-bold transition-all duration-200 bg-green-500 hover:bg-green-600"
-                        >
-                            🎨 Temaer
-                        </button>
-                        <button
+                >
+                    🎨 Temaer
+                </button>
+                <button
                             onClick={() => setShowSoundSelect(!showSoundSelect)}
                             className="p-2 rounded-lg text-white font-bold transition-all duration-200 bg-pink-500 hover:bg-pink-600"
-                        >
+                >
                             🎵 Lyd
-                        </button>
-                        <button
+                </button>
+                <button
                             onClick={() => setShowPowerUps(!showPowerUps)}
                             className="p-2 rounded-lg text-white font-bold transition-all duration-200 bg-purple-500 hover:bg-purple-600"
-                        >
+                >
                             ⚡ Power-ups
-                        </button>
-                    </div>
+                </button>
+            </div>
                 </div>
             )}
 
@@ -428,8 +577,8 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                                 className="flex-1 h-2 bg-white/20 rounded-lg appearance-none cursor-pointer"
                             />
                             <span className="text-white text-sm w-12">{Math.round(soundVolume * 100)}%</span>
-                        </div>
-                    </div>
+                                </div>
+                            </div>
 
                     {/* Lydtype */}
                     <div className="mb-4">
@@ -624,46 +773,116 @@ const Game = ({ selectedTable, onBackToMenu, onScoreUpdate, onGameOver, mode = '
 
 // Hovedkomponent
 const App = () => {
-    const [currentView, setCurrentView] = useState('menu');
-    const [score, setScore] = useState(() => {
-        const saved = localStorage.getItem('gangetabell-score');
-        return saved ? parseInt(saved) : 0;
-    });
+    const [currentView, setCurrentView] = useState('userSelect');
+    const [currentUser, setCurrentUserState] = useState(null);
+    const [userData, setUserData] = useState(null);
+    const [score, setScore] = useState(0);
     const [selectedTable, setSelectedTable] = useState(null);
     const [mode, setMode] = useState('normal');
-    const [isMuted, setIsMuted] = useState(() => localStorage.getItem('gangetabell-muted') === '1');
+    const [isMuted, setIsMuted] = useState(false);
     const [confettiBurst, setConfettiBurst] = useState(false);
-    const [badges, setBadges] = useState(() => {
-        try { return JSON.parse(localStorage.getItem('gangetabell-badges') || '[]'); } catch { return []; }
-    });
+    const [badges, setBadges] = useState([]);
     const [streakForBadge, setStreakForBadge] = useState(0);
     const [lastRushSummary, setLastRushSummary] = useState(null);
     
     // Nye state for alle funksjoner
-    const [currentAvatar, setCurrentAvatar] = useState(() => {
-        const saved = localStorage.getItem('gangetabell-avatar');
-        return saved ? JSON.parse(saved) : AVATARS[0];
-    });
-    const [currentTheme, setCurrentTheme] = useState(() => {
-        const saved = localStorage.getItem('gangetabell-theme');
-        return saved ? JSON.parse(saved) : THEMES[0];
-    });
+    const [currentAvatar, setCurrentAvatar] = useState(AVATARS[0]);
+    const [currentTheme, setCurrentTheme] = useState(THEMES[0]);
     const [powerUps, setPowerUps] = useState({
         double: { active: false, endTime: 0 },
         hint: { uses: 0 },
         time: { uses: 0 }
     });
-    const [dailyChallenge, setDailyChallenge] = useState(() => getDailyChallenge());
-    const [stats, setStats] = useState(() => {
-        const saved = localStorage.getItem('gangetabell-stats');
-        return saved ? JSON.parse(saved) : {
-            totalCorrect: 0,
-            maxStreak: 0,
-            fastestAnswer: 999999,
-            dailyCorrect: 0,
-            lastPlayDate: new Date().toDateString()
-        };
+    const [dailyChallenge, setDailyChallenge] = useState(null);
+    const [stats, setStats] = useState({
+        totalCorrect: 0,
+        maxStreak: 0,
+        fastestAnswer: 999999,
+        dailyCorrect: 0,
+        lastPlayDate: new Date().toDateString()
     });
+
+    // Brukerhåndtering
+    const handleUserSelect = (userName, data) => {
+        setCurrentUserState(userName);
+        setUserData(data);
+        setScore(data.score || 0);
+        setCurrentAvatar(data.currentAvatar || AVATARS[0]);
+        setCurrentTheme(data.currentTheme || THEMES[0]);
+        setIsMuted(data.isMuted || false);
+        setPowerUps(data.powerUps || { double: { active: false, endTime: 0 }, hint: { uses: 0 }, time: { uses: 0 } });
+        setStats(data.stats || { totalCorrect: 0, maxStreak: 0, fastestAnswer: 999999, dailyCorrect: 0, lastPlayDate: new Date().toDateString() });
+        setBadges(data.badges || []);
+        setDailyChallenge(getDailyChallenge());
+        setCurrentView('menu');
+    };
+
+    const saveCurrentUserData = () => {
+        if (currentUser && userData) {
+            const updatedData = {
+                ...userData,
+                score,
+                currentAvatar,
+                currentTheme,
+                isMuted,
+                powerUps,
+                stats,
+                badges
+            };
+            saveUserData(currentUser, updatedData);
+            setUserData(updatedData);
+        }
+    };
+
+    // Migrer eksisterende data til brukerbasert system
+    useEffect(() => {
+        const existingScore = localStorage.getItem('gangetabell-score');
+        const existingAvatar = localStorage.getItem('gangetabell-avatar');
+        const existingTheme = localStorage.getItem('gangetabell-theme');
+        
+        if (existingScore && !currentUser) {
+            // Migrer til "Standard Bruker"
+            const migratedData = {
+                score: parseInt(existingScore) || 0,
+                currentAvatar: existingAvatar ? JSON.parse(existingAvatar) : AVATARS[0],
+                currentTheme: existingTheme ? JSON.parse(existingTheme) : THEMES[0],
+                isMuted: localStorage.getItem('gangetabell-muted') === '1',
+                soundVolume: parseFloat(localStorage.getItem('gangetabell-sound-volume')) || 0.3,
+                soundType: localStorage.getItem('gangetabell-sound-type') || 'soft',
+                soundFrequency: localStorage.getItem('gangetabell-sound-frequency') || 'normal',
+                powerUps: { double: { active: false, endTime: 0 }, hint: { uses: 0 }, time: { uses: 0 } },
+                badges: [],
+                stats: {
+                    totalCorrect: 0,
+                    maxStreak: 0,
+                    fastestAnswer: 999999,
+                    dailyCorrect: 0,
+                    lastPlayDate: new Date().toDateString()
+                },
+                createdAt: new Date().toISOString()
+            };
+            
+            saveUserData('Standard Bruker', migratedData);
+            setCurrentUser('Standard Bruker');
+            handleUserSelect('Standard Bruker', migratedData);
+            
+            // Rydd opp gamle data
+            localStorage.removeItem('gangetabell-score');
+            localStorage.removeItem('gangetabell-avatar');
+            localStorage.removeItem('gangetabell-theme');
+            localStorage.removeItem('gangetabell-muted');
+            localStorage.removeItem('gangetabell-sound-volume');
+            localStorage.removeItem('gangetabell-sound-type');
+            localStorage.removeItem('gangetabell-sound-frequency');
+        }
+    }, []);
+
+    // Lagre data når det endres
+    useEffect(() => {
+        if (currentUser) {
+            saveCurrentUserData();
+        }
+    }, [score, currentAvatar, currentTheme, isMuted, powerUps, stats, badges]);
     const [trophies, setTrophies] = useState(() => {
         try { return JSON.parse(localStorage.getItem('gangetabell-trophies') || '[]'); } catch { return []; }
     });
@@ -804,9 +1023,9 @@ const [soundFrequency, setSoundFrequency] = useState(() => {
     return saved || 'normal'; // normal, reduced, minimal
 });
 
-const correctAudio = useRef(null);
-const wrongAudio = useRef(null);
-const badgeAudio = useRef(null);
+    const correctAudio = useRef(null);
+    const wrongAudio = useRef(null);
+    const badgeAudio = useRef(null);
 
 // Mykere lydalternativer
 const SOUND_URLS = {
@@ -827,14 +1046,14 @@ const SOUND_URLS = {
     }
 };
 
-useEffect(() => {
-    localStorage.setItem('gangetabell-muted', isMuted ? '1' : '0');
+    useEffect(() => {
+        localStorage.setItem('gangetabell-muted', isMuted ? '1' : '0');
     localStorage.setItem('gangetabell-sound-volume', soundVolume.toString());
     localStorage.setItem('gangetabell-sound-type', soundType);
     localStorage.setItem('gangetabell-sound-frequency', soundFrequency);
 }, [isMuted, soundVolume, soundType, soundFrequency]);
 
-const playSfx = (type) => {
+    const playSfx = (type) => {
     if (isMuted || soundVolume === 0) return;
     
     // Smart lyd - reduser frekvens basert på innstilling
@@ -850,8 +1069,8 @@ const playSfx = (type) => {
         audio.play().catch(() => {});
     } catch (error) {
         console.warn('Could not play sound:', error);
-    }
-};
+        }
+    };
 
     const triggerConfetti = () => {
         setConfettiBurst(true);
@@ -884,7 +1103,11 @@ const playSfx = (type) => {
                     </div>
                 )}
 
-                {currentView === 'menu' ? (
+                {currentView === 'userSelect' ? (
+                    <UserSelect 
+                        onUserSelect={handleUserSelect}
+                    />
+                ) : currentView === 'menu' ? (
                     <StartMenu 
                         onStartGame={handleStartGame}
                         onStartRush={handleStartRush}
@@ -906,6 +1129,8 @@ const playSfx = (type) => {
                         soundFrequency={soundFrequency}
                         setSoundFrequency={setSoundFrequency}
                         playSfx={playSfx}
+                        currentUser={currentUser}
+                        onSwitchUser={() => setCurrentView('userSelect')}
                     />
                 ) : (
                     <Game 
