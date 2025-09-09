@@ -1,4 +1,4 @@
-// Gangetabell Trener - JavaScript
+// Gangetabell Trener - JavaScript (Forbedret versjon)
 
 const { useState, useEffect, useRef } = React;
 
@@ -173,18 +173,18 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
     const availableStickers = getAvailableStickers(score);
 
     return (
-        <div className="text-center p-8">
-            <h1 className="text-6xl font-bold rainbow-text mb-4">
+        <div className="text-center p-4 md:p-8 max-w-6xl mx-auto">
+            <h1 className="text-4xl md:text-6xl font-bold rainbow-text mb-6">
                 🎯 Gangetabell Trener
             </h1>
             
             {/* Avatar og nivå */}
-            <div className="flex items-center justify-center gap-4 mb-6">
-                <div className="flex items-center gap-2">
-                    <span className="text-4xl">{currentAvatar.emoji}</span>
-                    <div>
-                        <p className="text-xl text-white font-bold">{currentAvatar.name}</p>
-                        <p className="text-lg text-white">
+            <div className="flex flex-col md:flex-row items-center justify-center gap-4 mb-6">
+                <div className="flex items-center gap-3">
+                    <span className="text-3xl md:text-4xl">{currentAvatar.emoji}</span>
+                    <div className="text-center md:text-left">
+                        <p className="text-lg md:text-xl text-white font-bold">{currentAvatar.name}</p>
+                        <p className="text-base md:text-lg text-white">
                             {currentLevel.emoji} {currentLevel.name} · <span className="font-bold">{score}</span> poeng
                         </p>
                     </div>
@@ -239,9 +239,9 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
             </div>
 
             {/* Tabell valg */}
-            <div className="bg-white/20 backdrop-blur-sm rounded-3xl p-8 mb-8">
-                <h2 className="text-3xl font-bold text-white mb-6">Velg hvilken tabell du vil øve på:</h2>
-                <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className="bg-white/20 backdrop-blur-sm rounded-2xl md:rounded-3xl p-6 md:p-8 mb-6">
+                <h2 className="text-2xl md:text-3xl font-bold text-white mb-6">Velg hvilken tabell du vil øve på:</h2>
+                <div className="grid grid-cols-3 md:grid-cols-5 gap-3 md:gap-4 mb-6">
                     {[2, 3, 4, 5, 6, 7, 8, 9, 10].map(table => (
                         <button
                             key={table}
@@ -269,44 +269,44 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
             </div>
 
             {/* Start knapper */}
-            <div className="flex items-center justify-center gap-4 mb-6">
+            <div className="flex flex-col md:flex-row items-center justify-center gap-4 mb-6">
                 <button
                     onClick={handleStart}
-                    className="bg-green-500 hover:bg-green-600 text-white text-3xl font-bold py-6 px-12 rounded-3xl transition-all duration-200 transform hover:scale-105 shadow-2xl"
+                    className="bg-green-500 hover:bg-green-600 text-white text-2xl md:text-3xl font-bold py-4 md:py-6 px-8 md:px-12 rounded-2xl md:rounded-3xl transition-all duration-200 transform hover:scale-105 shadow-2xl w-full md:w-auto"
                 >
                     🚀 Start Spill!
                 </button>
                 <button
                     onClick={() => onStartRush(selectedTable)}
-                    className="bg-yellow-400 hover:bg-yellow-500 text-black text-3xl font-bold py-6 px-12 rounded-3xl transition-all duration-200 transform hover:scale-105 shadow-2xl"
+                    className="bg-yellow-400 hover:bg-yellow-500 text-black text-2xl md:text-3xl font-bold py-4 md:py-6 px-8 md:px-12 rounded-2xl md:rounded-3xl transition-all duration-200 transform hover:scale-105 shadow-2xl w-full md:w-auto"
                 >
                     ⏱️ Rush 60s
                 </button>
             </div>
 
             {/* Navigasjonsknapper */}
-            <div className="flex gap-4 justify-center flex-wrap">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
                 <button
                     onClick={() => setShowAvatarSelect(!showAvatarSelect)}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl font-bold"
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 rounded-xl font-bold transition-all duration-200"
                 >
                     👤 Avatars
                 </button>
                 <button
                     onClick={() => setShowThemeSelect(!showThemeSelect)}
-                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-xl font-bold"
+                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-xl font-bold transition-all duration-200"
                 >
                     🎨 Temaer
                 </button>
                 <button
                     onClick={() => setShowStickers(!showStickers)}
-                    className="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-xl font-bold"
+                    className="bg-pink-500 hover:bg-pink-600 text-white px-4 py-3 rounded-xl font-bold transition-all duration-200"
                 >
                     🏷️ Klistremerker
                 </button>
                 <button
                     onClick={() => setShowTrophies(!showTrophies)}
-                    className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-xl font-bold"
+                    className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-3 rounded-xl font-bold transition-all duration-200"
                 >
                     🏆 Troféer
                 </button>
