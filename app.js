@@ -158,10 +158,11 @@ const ConfettiLayer = ({ burst }) => {
 };
 
 // Startmeny komponent
-const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, setIsMuted, currentAvatar, setCurrentAvatar, currentTheme, setCurrentTheme, powerUps, usePowerUp, dailyChallenge }) => {
+const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, setIsMuted, currentAvatar, setCurrentAvatar, currentTheme, setCurrentTheme, powerUps, usePowerUp, dailyChallenge, soundVolume, setSoundVolume, soundType, setSoundType, soundFrequency, setSoundFrequency, playSfx }) => {
     const [selectedTable, setSelectedTable] = useState(null);
     const [showAvatarSelect, setShowAvatarSelect] = useState(false);
     const [showThemeSelect, setShowThemeSelect] = useState(false);
+    const [showSoundSelect, setShowSoundSelect] = useState(false);
     const [showStickers, setShowStickers] = useState(false);
     const [showTrophies, setShowTrophies] = useState(false);
 
@@ -189,13 +190,31 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                         </p>
                     </div>
                 </div>
-                <button
-                    onClick={() => setIsMuted(v => !v)}
-                    className={`ml-4 px-4 py-2 rounded-xl text-white font-bold ${isMuted ? 'bg-gray-500' : 'bg-indigo-500 hover:bg-indigo-600'}`}
-                    aria-label="Lyd av/på"
-                >
-                    {isMuted ? '🔇 Lyd av' : '🔊 Lyd på'}
-                </button>
+                <div className="flex flex-col md:flex-row items-center gap-2">
+                    <button
+                        onClick={() => setIsMuted(v => !v)}
+                        className={`px-4 py-2 rounded-xl text-white font-bold transition-all duration-200 ${isMuted ? 'bg-gray-500' : 'bg-indigo-500 hover:bg-indigo-600'}`}
+                        aria-label="Lyd av/på"
+                    >
+                        {isMuted ? '🔇 Lyd av' : '🔊 Lyd på'}
+                    </button>
+                    
+                    {!isMuted && (
+                        <div className="flex items-center gap-2">
+                            <span className="text-white text-sm">🔊</span>
+                            <input
+                                type="range"
+                                min="0"
+                                max="1"
+                                step="0.1"
+                                value={soundVolume}
+                                onChange={(e) => setSoundVolume(parseFloat(e.target.value))}
+                                className="w-16 h-2 bg-white/20 rounded-lg appearance-none cursor-pointer"
+                            />
+                            <span className="text-white text-sm">{Math.round(soundVolume * 100)}%</span>
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Daglig utfordring */}
@@ -285,7 +304,7 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
             </div>
 
             {/* Navigasjonsknapper */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-6">
                 <button
                     onClick={() => setShowAvatarSelect(!showAvatarSelect)}
                     className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 rounded-xl font-bold transition-all duration-200"
@@ -297,6 +316,12 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                     className="bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-xl font-bold transition-all duration-200"
                 >
                     🎨 Temaer
+                </button>
+                <button
+                    onClick={() => setShowSoundSelect(!showSoundSelect)}
+                    className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-3 rounded-xl font-bold transition-all duration-200"
+                >
+                    🎵 Lyd
                 </button>
                 <button
                     onClick={() => setShowStickers(!showStickers)}
@@ -357,6 +382,103 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                                 <div className="text-sm">{theme.name}</div>
                             </button>
                         ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Sound selector */}
+            {showSoundSelect && (
+                <div className="mt-6 bg-white/20 backdrop-blur-sm rounded-2xl p-4">
+                    <h3 className="text-xl font-bold text-white mb-3">🎵 Lydinnstillinger</h3>
+                    
+                    {/* Lydtype */}
+                    <div className="mb-4">
+                        <h4 className="text-lg font-bold text-white mb-2">Lydtype:</h4>
+                        <div className="grid grid-cols-3 gap-2">
+                            <button
+                                onClick={() => setSoundType('soft')}
+                                className={`p-2 rounded-lg text-white font-bold transition-all duration-200 ${
+                                    soundType === 'soft' 
+                                        ? 'bg-green-400 text-black' 
+                                        : 'bg-white/30 hover:bg-white/50'
+                                }`}
+                            >
+                                <div className="text-sm">🔔 Myk</div>
+                            </button>
+                            <button
+                                onClick={() => setSoundType('classic')}
+                                className={`p-2 rounded-lg text-white font-bold transition-all duration-200 ${
+                                    soundType === 'classic' 
+                                        ? 'bg-green-400 text-black' 
+                                        : 'bg-white/30 hover:bg-white/50'
+                                }`}
+                            >
+                                <div className="text-sm">🎵 Klassisk</div>
+                            </button>
+                            <button
+                                onClick={() => setSoundType('minimal')}
+                                className={`p-2 rounded-lg text-white font-bold transition-all duration-200 ${
+                                    soundType === 'minimal' 
+                                        ? 'bg-green-400 text-black' 
+                                        : 'bg-white/30 hover:bg-white/50'
+                                }`}
+                            >
+                                <div className="text-sm">🔇 Minimal</div>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Lydfrekvens */}
+                    <div className="mb-4">
+                        <h4 className="text-lg font-bold text-white mb-2">Frekvens:</h4>
+                        <div className="grid grid-cols-3 gap-2">
+                            <button
+                                onClick={() => setSoundFrequency('normal')}
+                                className={`p-2 rounded-lg text-white font-bold transition-all duration-200 ${
+                                    soundFrequency === 'normal' 
+                                        ? 'bg-blue-400 text-black' 
+                                        : 'bg-white/30 hover:bg-white/50'
+                                }`}
+                            >
+                                <div className="text-sm">🔊 Normal</div>
+                            </button>
+                            <button
+                                onClick={() => setSoundFrequency('reduced')}
+                                className={`p-2 rounded-lg text-white font-bold transition-all duration-200 ${
+                                    soundFrequency === 'reduced' 
+                                        ? 'bg-blue-400 text-black' 
+                                        : 'bg-white/30 hover:bg-white/50'
+                                }`}
+                            >
+                                <div className="text-sm">🔉 Redusert</div>
+                            </button>
+                            <button
+                                onClick={() => setSoundFrequency('minimal')}
+                                className={`p-2 rounded-lg text-white font-bold transition-all duration-200 ${
+                                    soundFrequency === 'minimal' 
+                                        ? 'bg-blue-400 text-black' 
+                                        : 'bg-white/30 hover:bg-white/50'
+                                }`}
+                            >
+                                <div className="text-sm">🔇 Minimal</div>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Test lyd */}
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => playSfx('correct')}
+                            className="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg font-bold text-sm"
+                        >
+                            🎵 Test riktig
+                        </button>
+                        <button
+                            onClick={() => playSfx('badge')}
+                            className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-2 rounded-lg font-bold text-sm"
+                        >
+                            🏆 Test badge
+                        </button>
                     </div>
                 </div>
             )}
@@ -702,22 +824,68 @@ const App = () => {
         }
     };
 
-    // Lyd-effekter
-    const correctAudio = useRef(null);
-    const wrongAudio = useRef(null);
-    const badgeAudio = useRef(null);
+// Forbedret lydsystem
+const [soundVolume, setSoundVolume] = useState(() => {
+    const saved = localStorage.getItem('gangetabell-sound-volume');
+    return saved ? parseFloat(saved) : 0.3; // Standard 30% volum
+});
+const [soundType, setSoundType] = useState(() => {
+    const saved = localStorage.getItem('gangetabell-sound-type');
+    return saved || 'soft'; // soft, classic, minimal
+});
+const [soundFrequency, setSoundFrequency] = useState(() => {
+    const saved = localStorage.getItem('gangetabell-sound-frequency');
+    return saved || 'normal'; // normal, reduced, minimal
+});
 
-    useEffect(() => {
-        localStorage.setItem('gangetabell-muted', isMuted ? '1' : '0');
-    }, [isMuted]);
+const correctAudio = useRef(null);
+const wrongAudio = useRef(null);
+const badgeAudio = useRef(null);
 
-    const playSfx = (type) => {
-        if (isMuted) return;
-        const el = type === 'correct' ? correctAudio.current : type === 'wrong' ? wrongAudio.current : badgeAudio.current;
-        if (el) {
-            try { el.currentTime = 0; el.play(); } catch {}
-        }
-    };
+// Mykere lydalternativer
+const SOUND_URLS = {
+    soft: {
+        correct: "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBS13yO/eizEIHWq+8+OWT",
+        wrong: "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBS13yO/eizEIHWq+8+OWT",
+        badge: "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBS13yO/eizEIHWq+8+OWT"
+    },
+    classic: {
+        correct: "https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3",
+        wrong: "https://assets.mixkit.co/active_storage/sfx/2569/2569-preview.mp3", 
+        badge: "https://assets.mixkit.co/active_storage/sfx/2011/2011-preview.mp3"
+    },
+    minimal: {
+        correct: "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBS13yO/eizEIHWq+8+OWT",
+        wrong: "",
+        badge: "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBS13yO/eizEIHWq+8+OWT"
+    }
+};
+
+useEffect(() => {
+    localStorage.setItem('gangetabell-muted', isMuted ? '1' : '0');
+    localStorage.setItem('gangetabell-sound-volume', soundVolume.toString());
+    localStorage.setItem('gangetabell-sound-type', soundType);
+    localStorage.setItem('gangetabell-sound-frequency', soundFrequency);
+}, [isMuted, soundVolume, soundType, soundFrequency]);
+
+const playSfx = (type) => {
+    if (isMuted || soundVolume === 0) return;
+    
+    // Smart lyd - reduser frekvens basert på innstilling
+    if (soundFrequency === 'reduced' && type === 'correct' && Math.random() > 0.5) return;
+    if (soundFrequency === 'minimal' && type !== 'badge') return;
+    
+    const soundUrl = SOUND_URLS[soundType][type];
+    if (!soundUrl) return;
+    
+    try {
+        const audio = new Audio(soundUrl);
+        audio.volume = soundVolume;
+        audio.play().catch(() => {});
+    } catch (error) {
+        console.warn('Could not play sound:', error);
+    }
+};
 
     const triggerConfetti = () => {
         setConfettiBurst(true);
@@ -765,6 +933,13 @@ const App = () => {
                         powerUps={powerUps}
                         usePowerUp={usePowerUp}
                         dailyChallenge={dailyChallenge}
+                        soundVolume={soundVolume}
+                        setSoundVolume={setSoundVolume}
+                        soundType={soundType}
+                        setSoundType={setSoundType}
+                        soundFrequency={soundFrequency}
+                        setSoundFrequency={setSoundFrequency}
+                        playSfx={playSfx}
                     />
                 ) : (
                     <Game 
