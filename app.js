@@ -946,12 +946,12 @@ const App = () => {
         } else if (powerUpId === 'hint') {
             setPowerUps(prev => ({
                 ...prev,
-                hint: { uses: prev.hint.uses + 1 }
+                hint: { uses: (prev?.hint?.uses || 0) + 1 }
             }));
         } else if (powerUpId === 'time') {
             setPowerUps(prev => ({
                 ...prev,
-                time: { uses: prev.time.uses + 1 }
+                time: { uses: (prev?.time?.uses || 0) + 1 }
             }));
         }
     };
@@ -960,7 +960,7 @@ const App = () => {
         let finalPoints = points;
         
         // 2x poeng power-up
-        if (powerUps.double.active && Date.now() < powerUps.double.endTime) {
+        if (powerUps && powerUps.double && powerUps.double.active && Date.now() < powerUps.double.endTime) {
             finalPoints *= 2;
         }
 
@@ -1098,7 +1098,7 @@ const SOUND_URLS = {
                 <ConfettiLayer burst={confettiBurst} />
                 
                 {/* Power-up indikator */}
-                {powerUps.double.active && Date.now() < powerUps.double.endTime && (
+                {powerUps && powerUps.double && powerUps.double.active && Date.now() < powerUps.double.endTime && (
                     <div className="fixed top-4 right-4 bg-yellow-400 text-black px-4 py-2 rounded-xl font-bold z-50 power-up-active">
                         💎 2x Poeng aktivt!
                     </div>
