@@ -1,12 +1,38 @@
-# React + Vite
+# Gangetabell Trener
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+En fargerik og morsom webapp for barn i 1.–7. klasse som trener på gangetabellen (2-gangen til 10-gangen).
 
-Currently, two official plugins are available:
+## Funksjoner
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 🎯 **Spillkonsept med poengsystem** - Barn får poeng for riktige svar
+- 🏆 **Nivåsystem** - Rookie → Smart → Pro → Genius
+- 🎨 **Fargerik og barnevennlig design** - Store knapper og regnbuefarger
+- 🎲 **Tilfeldige oppgaver** - Fra 2-gangen til 10-gangen
+- ✨ **Positive animasjoner** - Bounce-effekt for riktige svar
+- 💡 **Hints ved feil** - Viser riktig svar og oppmuntring
+- 🎮 **Startmeny** - Velg spesifikk tabell eller bland alle
+- 💾 **localStorage** - Lagrer poengsum og nivå
+- 🔥 **Streak-system** - Bonus poeng for påfølgende riktige svar
+- ⏱️ **Rush-modus** - 60 sekunders utfordring
+- 🎊 **Konfetti og lydeffekter** - Med mute-knapp
+- 🏅 **Badges** - Samle merker for prestasjoner
 
-## Expanding the ESLint configuration
+## Slik bruker du appen
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+1. Åpne `index.html` i nettleseren
+2. Velg tabell - Klikk på en spesifikk gangetabell eller "Blande alle tabeller"
+3. Start spillet - Klikk "Start Spill!" eller "Rush 60s"
+4. Svar på oppgaver - Klikk på riktig svar
+5. Samle poeng - Få bonus for streak og level opp!
+
+## Teknologi
+
+- React (via CDN)
+- Tailwind CSS (via CDN)
+- Vanilla JavaScript
+- localStorage for lagring
+- Ingen server eller backend nødvendig
+
+## Deploy
+
+Appen kan enkelt deployes til Netlify, Vercel eller andre statiske hosting-tjenester ved å laste opp `index.html`-filen.
