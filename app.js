@@ -233,23 +233,23 @@ const UserSelect = ({ onUserSelect, onNewUser }) => {
 
     return (
         <div className="min-h-screen gradient-bg flex items-center justify-center p-4">
-            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-8 max-w-2xl w-full">
-                <h1 className="text-4xl font-bold text-white text-center mb-8">
+            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 md:p-8 max-w-2xl w-full">
+                <h1 className="text-3xl md:text-4xl font-bold text-white text-center mb-6 md:mb-8">
                     🎯 Velg Bruker
                 </h1>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4 mb-6">
                     {users.map(user => (
                         <button
                             key={user.name}
                             onClick={() => onUserSelect(user.name, user)}
-                            className="bg-white/30 hover:bg-white/50 text-white p-4 rounded-xl transition-all duration-200 text-left"
+                            className="bg-white/30 hover:bg-white/50 active:bg-white/60 text-white p-4 rounded-xl transition-all duration-200 text-left touch-target"
                         >
                             <div className="flex items-center gap-3">
-                                <span className="text-3xl">{user.currentAvatar?.emoji || '👤'}</span>
+                                <span className="text-2xl md:text-3xl">{user.currentAvatar?.emoji || '👤'}</span>
                                 <div>
-                                    <h3 className="text-lg font-bold">{user.name}</h3>
-                                    <p className="text-sm opacity-80">
+                                    <h3 className="text-base md:text-lg font-bold">{user.name}</h3>
+                                    <p className="text-xs md:text-sm opacity-80">
                                         {getCurrentLevel(user.score || 0).emoji} {getCurrentLevel(user.score || 0).name} · {user.score || 0} poeng
                                     </p>
                                 </div>
@@ -260,7 +260,7 @@ const UserSelect = ({ onUserSelect, onNewUser }) => {
 
                 <button
                     onClick={() => setShowNewUserModal(true)}
-                    className="w-full bg-green-500 hover:bg-green-600 text-white py-4 rounded-xl font-bold text-lg transition-all duration-200"
+                    className="w-full bg-green-500 hover:bg-green-600 active:bg-green-700 text-white py-4 rounded-xl font-bold text-base md:text-lg transition-all duration-200 touch-target"
                 >
                     ➕ Ny Bruker
                 </button>
@@ -268,25 +268,26 @@ const UserSelect = ({ onUserSelect, onNewUser }) => {
                 {showNewUserModal && (
                     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
                         <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 max-w-md w-full">
-                            <h3 className="text-xl font-bold text-white mb-4">Ny Bruker</h3>
+                            <h3 className="text-lg md:text-xl font-bold text-white mb-4">Ny Bruker</h3>
                             <input
                                 type="text"
                                 value={newUserName}
                                 onChange={(e) => setNewUserName(e.target.value)}
                                 placeholder="Skriv inn navn..."
-                                className="w-full p-3 rounded-lg bg-white/30 text-white placeholder-white/70 mb-4"
+                                className="w-full p-3 rounded-lg bg-white/30 text-white placeholder-white/70 mb-4 text-base"
                                 onKeyPress={(e) => e.key === 'Enter' && handleNewUser()}
+                                autoFocus
                             />
                             <div className="flex gap-3">
                                 <button
                                     onClick={handleNewUser}
-                                    className="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-bold"
+                                    className="flex-1 bg-green-500 hover:bg-green-600 active:bg-green-700 text-white py-3 rounded-lg font-bold touch-target"
                                 >
                                     Opprett
                                 </button>
                                 <button
                                     onClick={() => setShowNewUserModal(false)}
-                                    className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 rounded-lg font-bold"
+                                    className="flex-1 bg-gray-500 hover:bg-gray-600 active:bg-gray-700 text-white py-3 rounded-lg font-bold touch-target"
                                 >
                                     Avbryt
                                 </button>
