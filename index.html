@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="no">
-<head>
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gangetabell Trener</title>
@@ -41,13 +41,29 @@
             0%, 100% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
         }
+        @keyframes confettiFall {
+            0% { transform: translateY(-20vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+        .confetti {
+            position: fixed;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 50;
+        }
+        .confetti-piece {
+            position: absolute;
+            font-size: 20px;
+            animation: confettiFall 1.5s linear forwards;
+        }
     </style>
-</head>
+  </head>
 <body class="min-h-screen gradient-bg">
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState, useEffect, useRef } = React;
 
         // Nivåsystem
         const LEVELS = [
@@ -98,7 +114,7 @@
         };
 
         // Startmeny komponent
-        const StartMenu = ({ onStartGame, currentLevel, score }) => {
+        const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, setIsMuted }) => {
             const [selectedTable, setSelectedTable] = useState(null);
 
             const handleStart = () => {
@@ -110,9 +126,18 @@
                     <h1 className="text-6xl font-bold rainbow-text mb-4">
                         🎯 Gangetabell Trener
                     </h1>
-                    <p className="text-2xl text-white mb-8">
-                        Velkommen tilbake! Du er {currentLevel.emoji} {currentLevel.name}
-                    </p>
+                    <div className="flex items-center justify-center gap-4 mb-6">
+                        <p className="text-2xl text-white">
+                            Velkommen! Du er {currentLevel.emoji} {currentLevel.name} · Poeng: <span className="font-bold">{score}</span>
+                        </p>
+                        <button
+                            onClick={() => setIsMuted(v => !v)}
+                            className={`ml-4 px-4 py-2 rounded-xl text-white font-bold ${isMuted ? 'bg-gray-500' : 'bg-indigo-500 hover:bg-indigo-600'}`}
+                            aria-label="Lyd av/på"
+                        >
+                            {isMuted ? '🔇 Lyd av' : '🔊 Lyd på'}
+                        </button>
+                    </div>
                     <div className="bg-white/20 backdrop-blur-sm rounded-3xl p-8 mb-8">
                         <h2 className="text-3xl font-bold text-white mb-6">Velg hvilken tabell du vil øve på:</h2>
                         <div className="grid grid-cols-3 gap-4 mb-6">
@@ -141,27 +166,55 @@
                             🎲 Blande alle tabeller
                         </button>
                     </div>
-                    <button
-                        onClick={handleStart}
-                        className="bg-green-500 hover:bg-green-600 text-white text-3xl font-bold py-6 px-12 rounded-3xl transition-all duration-200 transform hover:scale-105 shadow-2xl"
-                    >
-                        🚀 Start Spill!
-                    </button>
+                    <div className="flex items-center justify-center gap-4">
+                        <button
+                            onClick={handleStart}
+                            className="bg-green-500 hover:bg-green-600 text-white text-3xl font-bold py-6 px-12 rounded-3xl transition-all duration-200 transform hover:scale-105 shadow-2xl"
+                        >
+                            🚀 Start Spill!
+                        </button>
+                        <button
+                            onClick={() => onStartRush(selectedTable)}
+                            className="bg-yellow-400 hover:bg-yellow-500 text-black text-3xl font-bold py-6 px-12 rounded-3xl transition-all duration-200 transform hover:scale-105 shadow-2xl"
+                        >
+                            ⏱️ Rush 60s
+                        </button>
+                    </div>
                 </div>
             );
         };
 
         // Spill komponent
-        const Game = ({ selectedTable, onBackToMenu, onScoreUpdate }) => {
+        const Game = ({ selectedTable, onBackToMenu, onScoreUpdate, onGameOver, mode = 'normal', playSfx, triggerConfetti }) => {
             const [currentQuestion, setCurrentQuestion] = useState(null);
             const [answers, setAnswers] = useState([]);
             const [selectedAnswer, setSelectedAnswer] = useState(null);
             const [feedback, setFeedback] = useState('');
             const [animation, setAnimation] = useState('');
             const [streak, setStreak] = useState(0);
+            const [timeLeft, setTimeLeft] = useState(60);
+            const intervalRef = useRef(null);
+            const [totalCount, setTotalCount] = useState(0);
+            const [correctCount, setCorrectCount] = useState(0);
 
             useEffect(() => {
                 generateNewQuestion();
+                if (mode === 'rush') {
+                    setTimeLeft(60);
+                    intervalRef.current = setInterval(() => {
+                        setTimeLeft(prev => {
+                            if (prev <= 1) {
+                                clearInterval(intervalRef.current);
+                                setTimeout(() => onGameOver && onGameOver({ correctCount, totalCount }), 300);
+                                return 0;
+                            }
+                            return prev - 1;
+                        });
+                    }, 1000);
+                }
+                return () => {
+                    if (intervalRef.current) clearInterval(intervalRef.current);
+                }
             }, []);
 
             const generateNewQuestion = () => {
@@ -180,12 +233,16 @@
                 
                 setSelectedAnswer(answer);
                 
+                setTotalCount(c => c + 1);
                 if (answer === currentQuestion.answer) {
                     setFeedback('🎉 Riktig! Fantastisk jobb!');
                     setAnimation('bounce-animation');
                     const newStreak = streak + 1;
                     setStreak(newStreak);
                     onScoreUpdate(10 + (newStreak * 2));
+                    playSfx('correct');
+                    triggerConfetti();
+                    setCorrectCount(c => c + 1);
                     
                     setTimeout(() => {
                         generateNewQuestion();
@@ -194,6 +251,7 @@
                     setFeedback(`❌ Feil svar. Riktig svar er ${currentQuestion.answer}. Prøv igjen!`);
                     setAnimation('shake-animation');
                     setStreak(0);
+                    playSfx('wrong');
                     
                     setTimeout(() => {
                         generateNewQuestion();
@@ -212,8 +270,11 @@
                         >
                             ← Tilbake
                         </button>
-                        <div className="text-white text-xl">
-                            🔥 Streak: {streak}
+                        <div className="flex items-center gap-4 text-white text-xl">
+                            {mode === 'rush' && (
+                                <span>⏱️ {timeLeft}s</span>
+                            )}
+                            <span>🔥 Streak: {streak}</span>
                         </div>
                     </div>
 
@@ -258,6 +319,30 @@
         };
 
         // Hovedkomponent
+        // Enkel Confetti komponent (DOM-emoji som faller)
+        const ConfettiLayer = ({ burst }) => {
+            if (!burst) return null;
+            const pieces = Array.from({ length: 20 });
+            const colors = ['🟡','🟣','🟢','🔵','🔴','🟠','⭐'];
+            return (
+                <div className="confetti w-full h-full">
+                    {pieces.map((_, i) => (
+                        <div
+                            key={i}
+                            className="confetti-piece"
+                            style={{
+                                left: `${Math.random() * 100}%`,
+                                animationDelay: `${Math.random() * 0.2}s`,
+                                color: 'transparent'
+                            }}
+                        >
+                            {colors[Math.floor(Math.random() * colors.length)]}
+                        </div>
+                    ))}
+                </div>
+            );
+        };
+
         const App = () => {
             const [currentView, setCurrentView] = useState('menu');
             const [score, setScore] = useState(() => {
@@ -265,11 +350,26 @@
                 return saved ? parseInt(saved) : 0;
             });
             const [selectedTable, setSelectedTable] = useState(null);
+            const [mode, setMode] = useState('normal');
+            const [isMuted, setIsMuted] = useState(() => localStorage.getItem('gangetabell-muted') === '1');
+            const [confettiBurst, setConfettiBurst] = useState(false);
+            const [badges, setBadges] = useState(() => {
+                try { return JSON.parse(localStorage.getItem('gangetabell-badges') || '[]'); } catch { return []; }
+            });
+            const [streakForBadge, setStreakForBadge] = useState(0);
+            const [lastRushSummary, setLastRushSummary] = useState(null);
 
             const currentLevel = getCurrentLevel(score);
 
             const handleStartGame = (table) => {
                 setSelectedTable(table);
+                setMode('normal');
+                setCurrentView('game');
+            };
+
+            const handleStartRush = (table) => {
+                setSelectedTable(table);
+                setMode('rush');
                 setCurrentView('game');
             };
 
@@ -281,23 +381,104 @@
                 const newScore = score + points;
                 setScore(newScore);
                 localStorage.setItem('gangetabell-score', newScore.toString());
+                if (newScore >= 100 && !badges.includes('100-poeng')) {
+                    const updated = [...badges, '100-poeng'];
+                    setBadges(updated);
+                    localStorage.setItem('gangetabell-badges', JSON.stringify(updated));
+                    playSfx('badge');
+                    setConfettiBurst(true);
+                    setTimeout(() => setConfettiBurst(false), 1200);
+                }
+            };
+
+            // Lyd-effekter
+            const correctAudio = useRef(null);
+            const wrongAudio = useRef(null);
+            const badgeAudio = useRef(null);
+
+            useEffect(() => {
+                localStorage.setItem('gangetabell-muted', isMuted ? '1' : '0');
+            }, [isMuted]);
+
+            const playSfx = (type) => {
+                if (isMuted) return;
+                const el = type === 'correct' ? correctAudio.current : type === 'wrong' ? wrongAudio.current : badgeAudio.current;
+                if (el) {
+                    try { el.currentTime = 0; el.play(); } catch {}
+                }
+            };
+
+            const triggerConfetti = () => {
+                setConfettiBurst(true);
+                setTimeout(() => setConfettiBurst(false), 1000);
+            };
+
+            const handleGameOver = (summary) => {
+                if (summary && typeof summary === 'object') {
+                    setLastRushSummary({
+                        correct: summary.correctCount || 0,
+                        total: summary.totalCount || 0,
+                        gainedPoints: 0
+                    });
+                }
+                setCurrentView('menu');
             };
 
             return (
                 <div className="min-h-screen flex items-center justify-center">
                     <div className="w-full max-w-4xl">
+                        <audio ref={correctAudio} src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3" preload="auto" />
+                        <audio ref={wrongAudio} src="https://assets.mixkit.co/active_storage/sfx/2569/2569-preview.mp3" preload="auto" />
+                        <audio ref={badgeAudio} src="https://assets.mixkit.co/active_storage/sfx/2011/2011-preview.mp3" preload="auto" />
+                        <ConfettiLayer burst={confettiBurst} />
                         {currentView === 'menu' ? (
                             <StartMenu 
                                 onStartGame={handleStartGame}
+                                onStartRush={handleStartRush}
                                 currentLevel={currentLevel}
                                 score={score}
+                                isMuted={isMuted}
+                                setIsMuted={setIsMuted}
                             />
                         ) : (
                             <Game 
                                 selectedTable={selectedTable}
                                 onBackToMenu={handleBackToMenu}
-                                onScoreUpdate={handleScoreUpdate}
+                                onScoreUpdate={(points) => {
+                                    setStreakForBadge(prev => {
+                                        const next = points > 0 ? prev + 1 : 0;
+                                        if (next >= 5 && !badges.includes('5-paa-rad')) {
+                                            const updated = [...badges, '5-paa-rad'];
+                                            setBadges(updated);
+                                            localStorage.setItem('gangetabell-badges', JSON.stringify(updated));
+                                            playSfx('badge');
+                                            triggerConfetti();
+                                        }
+                                        return next;
+                                    });
+                                    handleScoreUpdate(points);
+                                }}
+                                onGameOver={handleGameOver}
+                                mode={mode}
+                                playSfx={playSfx}
+                                triggerConfetti={triggerConfetti}
                             />
+                        )}
+                        {currentView === 'menu' && lastRushSummary && (
+                            <div className="mt-6 bg-white/30 backdrop-blur-sm rounded-2xl p-5 text-white">
+                                <div className="text-2xl font-bold mb-2">⏱️ Rush resultater</div>
+                                <div className="text-lg">Riktig: <span className="font-bold">{lastRushSummary.correct}</span> av {lastRushSummary.total}</div>
+                                <div className="text-lg">Bra jobbet! Prøv igjen og slå rekorden din! 🏆</div>
+                            </div>
+                        )}
+                        {badges.length > 0 && currentView === 'menu' && (
+                            <div className="mt-6 bg-white/20 backdrop-blur-sm rounded-2xl p-4 text-white">
+                                <div className="font-bold mb-2">🏅 Dine merker:</div>
+                                <div className="flex gap-3 flex-wrap">
+                                    {badges.includes('5-paa-rad') && <span className="px-3 py-1 rounded-xl bg-green-500 text-white">5 på rad</span>}
+                                    {badges.includes('100-poeng') && <span className="px-3 py-1 rounded-xl bg-yellow-500 text-black">100 poeng</span>}
+                                </div>
+                            </div>
                         )}
                     </div>
                 </div>
@@ -307,5 +488,5 @@
         // Render appen
         ReactDOM.render(<App />, document.getElementById('root'));
     </script>
-</body>
+  </body>
 </html>
