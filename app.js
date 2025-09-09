@@ -333,11 +333,11 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
-                    <button
-                        onClick={() => setIsMuted(v => !v)}
+                <button
+                    onClick={() => setIsMuted(v => !v)}
                         className={`px-3 py-2 rounded-lg text-white font-bold transition-all duration-200 ${isMuted ? 'bg-gray-500' : 'bg-indigo-500 hover:bg-indigo-600'}`}
-                        aria-label="Lyd av/på"
-                    >
+                    aria-label="Lyd av/på"
+                >
                         {isMuted ? '🔇' : '🔊'}
                     </button>
                     <button
@@ -353,7 +353,7 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                         aria-label="Bytt bruker"
                     >
                         👤
-                    </button>
+                </button>
                 </div>
             </div>
 
@@ -795,11 +795,11 @@ const App = () => {
     });
     const [dailyChallenge, setDailyChallenge] = useState(null);
     const [stats, setStats] = useState({
-        totalCorrect: 0,
-        maxStreak: 0,
-        fastestAnswer: 999999,
-        dailyCorrect: 0,
-        lastPlayDate: new Date().toDateString()
+            totalCorrect: 0,
+            maxStreak: 0,
+            fastestAnswer: 999999,
+            dailyCorrect: 0,
+            lastPlayDate: new Date().toDateString()
     });
 
     // Brukerhåndtering

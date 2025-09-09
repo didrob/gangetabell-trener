@@ -1,18 +1,10 @@
-const CACHE_NAME = 'gangetabell-cache-v2';
+const CACHE_NAME = 'gangetabell-cache-v3';
 const ASSETS = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
   '/styles.css',
-  '/app-new.js',
-  '/components/StartMenu.js',
-  '/components/Game.js',
-  '/components/ConfettiLayer.js',
-  '/components/InstallButton.js',
-  '/data/constants.js',
-  '/data/gameLogic.js',
-  '/utils/localStorage.js',
-  '/utils/soundEffects.js',
+  '/app.js',
   '/icons/icon-192.svg',
   '/icons/icon-512.svg'
 ];

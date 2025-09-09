@@ -1,0 +1,14 @@
+[33mcommit b8c3e447655fc6d77d2d5365b560e5199b830e44[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: didrob <didrob@gmail.com>
+Date:   Tue Sep 9 15:30:14 2025 +0200
+
+    Implementer navn-basert brukersystem med localStorage
+    
+    - Legg til brukerhåndteringsfunksjoner (getUserData, saveUserData, getAllUsers)
+    - Ny UserSelect-komponent for brukervalg og registrering
+    - Automatisk migrering av eksisterende data til 'Standard Bruker'
+    - Brukervalg-knapp i StartMenu for å bytte mellom brukere
+    - Alle data lagres separat per bruker i localStorage
+    - Støtter flere brukere på samme enhet med separate profiler
+
+app.js
