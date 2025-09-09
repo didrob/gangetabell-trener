@@ -1189,8 +1189,8 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 
 const InstallButton = () => {
-    const [canInstall, setCanInstall] = React.useState(false);
-    React.useEffect(() => {
+    const [canInstall, setCanInstall] = useState(false);
+    useEffect(() => {
         const handler = (e) => { e.preventDefault(); deferredPrompt = e; setCanInstall(true); };
         window.addEventListener('beforeinstallprompt', handler);
         if (deferredPrompt) setCanInstall(true);
@@ -1221,4 +1221,5 @@ if ('serviceWorker' in navigator) {
 }
 
 // Render appen
-ReactDOM.render(<><App /><InstallButton /></>, document.getElementById('root'));
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<><App /><InstallButton /></>);
