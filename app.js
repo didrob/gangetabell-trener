@@ -1190,25 +1190,46 @@ window.addEventListener('beforeinstallprompt', (e) => {
 
 const InstallButton = () => {
     const [canInstall, setCanInstall] = useState(false);
+    const [isIOS, setIsIOS] = useState(false);
+    
     useEffect(() => {
-        const handler = (e) => { e.preventDefault(); deferredPrompt = e; setCanInstall(true); };
+        // Sjekk om det er iOS
+        const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        setIsIOS(iOS);
+        
+        const handler = (e) => { 
+            e.preventDefault(); 
+            deferredPrompt = e; 
+            setCanInstall(true); 
+        };
         window.addEventListener('beforeinstallprompt', handler);
         if (deferredPrompt) setCanInstall(true);
         return () => window.removeEventListener('beforeinstallprompt', handler);
     }, []);
-    if (!canInstall) return null;
+    
+    if (!canInstall && !isIOS) return null;
+    
+    const handleInstall = async () => {
+        if (isIOS) {
+            // For iOS, vis instruksjoner
+            alert('For å installere appen på iOS:\n\n1. Trykk på del-knappen (⬆️)\n2. Velg "Legg til på startskjerm"\n3. Trykk "Legg til"');
+            return;
+        }
+        
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        setCanInstall(false);
+    };
+    
     return (
         <button
-            onClick={async () => {
-                if (!deferredPrompt) return;
-                deferredPrompt.prompt();
-                await deferredPrompt.userChoice;
-                deferredPrompt = null;
-                setCanInstall(false);
-            }}
-            className="fixed bottom-6 right-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-5 rounded-2xl shadow-xl"
+            onClick={handleInstall}
+            className="fixed bottom-6 right-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-5 rounded-2xl shadow-xl z-50"
         >
-            ➕ Installer appen
+            {isIOS ? '📱 Installasjon' : '➕ Installer appen'}
         </button>
     );
 };
