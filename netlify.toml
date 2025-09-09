@@ -1,6 +1,5 @@
 [build]
   publish = "."
-  command = "echo 'No build needed - static site'"
 
 ## Optional security headers (safe defaults for a static site)
 [[headers]]
