@@ -2,8 +2,10 @@
 <html lang="no">
   <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#667eea">
     <title>Gangetabell Trener</title>
+    <link rel="manifest" href="/manifest.webmanifest">
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -485,8 +487,47 @@
             );
         };
 
+        // PWA: registrer service worker hvis støttet
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(() => {});
+            });
+        }
+
+        // Install-knapp når beforeinstallprompt fyrer
+        let deferredPrompt = null;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+        });
+
+        const InstallButton = () => {
+            const [canInstall, setCanInstall] = React.useState(false);
+            React.useEffect(() => {
+                const handler = (e) => { e.preventDefault(); deferredPrompt = e; setCanInstall(true); };
+                window.addEventListener('beforeinstallprompt', handler);
+                if (deferredPrompt) setCanInstall(true);
+                return () => window.removeEventListener('beforeinstallprompt', handler);
+            }, []);
+            if (!canInstall) return null;
+            return (
+                <button
+                    onClick={async () => {
+                        if (!deferredPrompt) return;
+                        deferredPrompt.prompt();
+                        await deferredPrompt.userChoice;
+                        deferredPrompt = null;
+                        setCanInstall(false);
+                    }}
+                    className="fixed bottom-6 right-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-5 rounded-2xl shadow-xl"
+                >
+                    ➕ Installer appen
+                </button>
+            );
+        };
+
         // Render appen
-        ReactDOM.render(<App />, document.getElementById('root'));
+        ReactDOM.render(<><App /><InstallButton /></>, document.getElementById('root'));
     </script>
   </body>
 </html>
