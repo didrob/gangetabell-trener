@@ -96,6 +96,113 @@
     .text-6xl { font-size: 3rem; }
     .text-4xl { font-size: 2rem; }
     .text-3xl { font-size: 1.5rem; }
+    .text-2xl { font-size: 1.25rem; }
+    .text-xl { font-size: 1.125rem; }
+    .text-lg { font-size: 1rem; }
     .grid-cols-3 { grid-template-columns: repeat(2, 1fr); }
+    .grid-cols-5 { grid-template-columns: repeat(3, 1fr); }
     .p-8 { padding: 1rem; }
+    .p-6 { padding: 0.75rem; }
+    .py-6 { padding-top: 1rem; padding-bottom: 1rem; }
+    .px-12 { padding-left: 2rem; padding-right: 2rem; }
+}
+
+@media (max-width: 480px) {
+    .text-6xl { font-size: 2.5rem; }
+    .text-4xl { font-size: 1.75rem; }
+    .text-3xl { font-size: 1.25rem; }
+    .grid-cols-3 { grid-template-columns: repeat(2, 1fr); }
+    .grid-cols-5 { grid-template-columns: repeat(2, 1fr); }
+    .p-4 { padding: 0.5rem; }
+    .py-4 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+    .px-8 { padding-left: 1.5rem; padding-right: 1.5rem; }
+}
+
+/* Forbedret touch targets for mobil */
+@media (max-width: 768px) {
+    button {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    .touch-target {
+        min-height: 48px;
+        min-width: 48px;
+    }
+}
+
+/* Loading states */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #ffffff;
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Forbedret accessibility */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Focus states */
+button:focus-visible,
+input:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+}
+
+/* Hover states for touch devices */
+@media (hover: hover) {
+    .hover-lift:hover {
+        transform: translateY(-2px);
+    }
+}
+
+/* Smooth transitions */
+* {
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+/* Better button states */
+button:active {
+    transform: scale(0.98);
+}
+
+/* Improved backdrop blur support */
+@supports (backdrop-filter: blur(10px)) {
+    .backdrop-blur-sm {
+        backdrop-filter: blur(4px);
+    }
+}
+
+/* Fallback for browsers without backdrop-filter */
+@supports not (backdrop-filter: blur(10px)) {
+    .backdrop-blur-sm {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
 }

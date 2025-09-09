@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate Icons</title>
+</head>
+<body>
+    <canvas id="canvas192" width="192" height="192" style="border: 1px solid #ccc; margin: 10px;"></canvas>
+    <canvas id="canvas512" width="512" height="512" style="border: 1px solid #ccc; margin: 10px;"></canvas>
+    <br>
+    <button onclick="downloadIcons()">Download Icons</button>
+    
+    <script>
+        function drawIcon(canvas, size) {
+            const ctx = canvas.getContext('2d');
+            
+            // Gradient background
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#667eea');
+            gradient.addColorStop(1, '#764ba2');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+            
+            // Rounded corners
+            ctx.globalCompositeOperation = 'destination-in';
+            ctx.beginPath();
+            ctx.roundRect(0, 0, size, size, size * 0.125);
+            ctx.fill();
+            ctx.globalCompositeOperation = 'source-over';
+            
+            // Target emoji
+            ctx.font = `${size * 0.4}px Arial`;
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🎯', size/2, size/2 - size * 0.1);
+            
+            // Text
+            ctx.font = `bold ${size * 0.08}px Arial`;
+            ctx.fillText('Gangetabell', size/2, size/2 + size * 0.15);
+            
+            ctx.font = `${size * 0.06}px Arial`;
+            ctx.fillText('Trener', size/2, size/2 + size * 0.25);
+        }
+        
+        function downloadIcons() {
+            // Draw 192x192
+            const canvas192 = document.getElementById('canvas192');
+            drawIcon(canvas192, 192);
+            
+            // Draw 512x512
+            const canvas512 = document.getElementById('canvas512');
+            drawIcon(canvas512, 512);
+            
+            // Download 192x192
+            const link192 = document.createElement('a');
+            link192.download = 'icon-192.png';
+            link192.href = canvas192.toDataURL();
+            link192.click();
+            
+            // Download 512x512
+            const link512 = document.createElement('a');
+            link512.download = 'icon-512.png';
+            link512.href = canvas512.toDataURL();
+            link512.click();
+        }
+        
+        // Draw on load
+        window.onload = function() {
+            drawIcon(document.getElementById('canvas192'), 192);
+            drawIcon(document.getElementById('canvas512'), 512);
+        };
+    </script>
+</body>
+</html>
