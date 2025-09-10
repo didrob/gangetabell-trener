@@ -33,48 +33,7 @@ const POWER_UPS = [
     { id: "time", name: "Ekstra Tid", emoji: "⏰", duration: 0, cost: 40 }
 ];
 
-// Gangemon-system
-const GANGEMON = [
-    // 2-gangen
-    { id: "fire-dragon", name: "Fire Dragon", emoji: "🐉", table: 2, rarity: "common", unlockScore: 0, description: "En vennlig ild-drage som elsker 2-gangen" },
-    { id: "flame-sprite", name: "Flame Sprite", emoji: "🔥", table: 2, rarity: "rare", unlockScore: 10, description: "En liten flamme-ånd som danser med tallene" },
-    
-    // 3-gangen
-    { id: "water-turtle", name: "Aqua Turtle", emoji: "🐢", table: 3, rarity: "common", unlockScore: 0, description: "En klok vann-skilpadde som behersker 3-gangen" },
-    { id: "wave-spirit", name: "Wave Spirit", emoji: "🌊", table: 3, rarity: "rare", unlockScore: 15, description: "En mystisk bølge-ånd fra havet" },
-    
-    // 4-gangen
-    { id: "earth-bear", name: "Earth Bear", emoji: "🐻", table: 4, rarity: "common", unlockScore: 0, description: "En sterk jord-bjørn som ruller med 4-gangen" },
-    { id: "mountain-giant", name: "Mountain Giant", emoji: "⛰️", table: 4, rarity: "rare", unlockScore: 20, description: "En mektig fjell-kjempe med stein-hjerte" },
-    
-    // 5-gangen
-    { id: "wind-eagle", name: "Wind Eagle", emoji: "🦅", table: 5, rarity: "common", unlockScore: 0, description: "En stolt vind-ørn som svever over 5-gangen" },
-    { id: "storm-cloud", name: "Storm Cloud", emoji: "⛈️", table: 5, rarity: "rare", unlockScore: 25, description: "En kraftig storm-sky som tordner med tallene" },
-    
-    // 6-gangen
-    { id: "ice-wolf", name: "Ice Wolf", emoji: "🐺", table: 6, rarity: "common", unlockScore: 0, description: "En kald is-ulv som jakter på 6-gangen" },
-    { id: "frost-queen", name: "Frost Queen", emoji: "❄️", table: 6, rarity: "rare", unlockScore: 30, description: "En elegant frost-dronning med is-krone" },
-    
-    // 7-gangen
-    { id: "thunder-tiger", name: "Thunder Tiger", emoji: "🐅", table: 7, rarity: "common", unlockScore: 0, description: "En lynrask torden-tiger som raser gjennom 7-gangen" },
-    { id: "lightning-bolt", name: "Lightning Bolt", emoji: "⚡", table: 7, rarity: "rare", unlockScore: 35, description: "En elektrisk lyn-straal som gnistrer med energi" },
-    
-    // 8-gangen
-    { id: "shadow-panther", name: "Shadow Panther", emoji: "🐆", table: 8, rarity: "common", unlockScore: 0, description: "En mystisk skygge-panter som smyger gjennom 8-gangen" },
-    { id: "night-spirit", name: "Night Spirit", emoji: "🌙", table: 8, rarity: "rare", unlockScore: 40, description: "En magisk natt-ånd som skinner i mørket" },
-    
-    // 9-gangen
-    { id: "golden-lion", name: "Golden Lion", emoji: "🦁", table: 9, rarity: "common", unlockScore: 0, description: "En majestetisk gull-løve som hersker over 9-gangen" },
-    { id: "sun-king", name: "Sun King", emoji: "☀️", table: 9, rarity: "rare", unlockScore: 45, description: "En strålende sol-konge med gull-krone" },
-    
-    // 10-gangen
-    { id: "cosmic-whale", name: "Cosmic Whale", emoji: "🐋", table: 10, rarity: "common", unlockScore: 0, description: "En enorm kosmisk hval som svømmer gjennom 10-gangen" },
-    { id: "star-emperor", name: "Star Emperor", emoji: "⭐", table: 10, rarity: "legendary", unlockScore: 60, description: "Den mektige stjerne-keiseren som behersker alle tall" },
-    
-    // Spesielle monstre
-    { id: "rainbow-unicorn", name: "Rainbow Unicorn", emoji: "🦄", table: "special", rarity: "legendary", unlockScore: 100, description: "En magisk regnbue-enhjørning som kan alt" },
-    { id: "phoenix", name: "Phoenix", emoji: "🔥", table: "special", rarity: "mythical", unlockScore: 200, description: "Den legendariske føniks som gjenoppstår fra asken" }
-];
+// Gangemon-system (temporarily removed for clean implementation)
 
 // Evolusjonsnivåer
 const EVOLUTION_LEVELS = [
@@ -174,31 +133,7 @@ const getAvailableStickers = (score) => {
     return STICKERS.filter(sticker => score >= sticker.unlockScore);
 };
 
-// Gangemon-hjelpefunksjoner
-const getAvailableGangemon = (totalCorrect) => {
-    return GANGEMON.filter(gangemon => totalCorrect >= gangemon.unlockScore);
-};
-
-const getGangemonByTable = (table) => {
-    return GANGEMON.filter(gangemon => gangemon.table === table);
-};
-
-const getEvolutionLevel = (score) => {
-    for (let i = EVOLUTION_LEVELS.length - 1; i >= 0; i--) {
-        if (score >= EVOLUTION_LEVELS[i].minScore) {
-            return EVOLUTION_LEVELS[i];
-        }
-    }
-    return EVOLUTION_LEVELS[0];
-};
-
-const checkGangemonUnlock = (totalCorrect, currentGangemon) => {
-    const newGangemon = GANGEMON.filter(gangemon => 
-        totalCorrect >= gangemon.unlockScore && 
-        !currentGangemon.includes(gangemon.id)
-    );
-    return newGangemon;
-};
+// Gangemon-hjelpefunksjoner (temporarily removed)
 
 const checkTrophies = (stats, newTrophies) => {
     const earned = [];
@@ -414,111 +349,9 @@ const ConfettiLayer = ({ burst }) => {
     );
 };
 
-// Gangemon Collection komponent
-const GangemonCollection = ({ gangemon, onClose }) => {
-    const availableGangemon = GANGEMON.filter(g => gangemon.includes(g.id));
-    const evolutionLevel = getEvolutionLevel(gangemon.length * 50); // Simuler score basert på antall Gangemon
-    
-    return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto">
-                <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-3xl font-bold text-white">🎮 Gangemon Collection</h2>
-                    <button
-                        onClick={onClose}
-                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl font-bold"
-                    >
-                        ✕ Lukk
-                    </button>
-                </div>
-                
-                {/* Evolusjonsnivå */}
-                <div className="bg-white/20 rounded-xl p-4 mb-6">
-                    <h3 className="text-xl font-bold text-white mb-2">Evolusjonsnivå</h3>
-                    <div className="flex items-center gap-3">
-                        <span className="text-3xl">{evolutionLevel.emoji}</span>
-                        <div>
-                            <p className="text-lg font-bold text-white">{evolutionLevel.name}</p>
-                            <p className="text-sm text-white/80">Samlet {availableGangemon.length} av {GANGEMON.length} Gangemon</p>
-                        </div>
-                    </div>
-                </div>
+// Gangemon Collection komponent (temporarily removed)
 
-                {/* Gangemon grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {GANGEMON.map(g => {
-                        const isOwned = gangemon.includes(g.id);
-                        const rarityColor = {
-                            common: 'bg-gray-500',
-                            rare: 'bg-blue-500',
-                            legendary: 'bg-purple-500',
-                            mythical: 'bg-yellow-500'
-                        }[g.rarity];
-                        
-                        return (
-                            <div
-                                key={g.id}
-                                className={`p-4 rounded-xl transition-all duration-200 ${
-                                    isOwned 
-                                        ? 'bg-white/30 hover:bg-white/40' 
-                                        : 'bg-white/10 opacity-50'
-                                }`}
-                            >
-                                <div className="text-center">
-                                    <div className="text-4xl mb-2">{isOwned ? g.emoji : '❓'}</div>
-                                    <h4 className="font-bold text-white text-sm mb-1">
-                                        {isOwned ? g.name : '???'}
-                                    </h4>
-                                    <div className={`inline-block px-2 py-1 rounded-full text-xs font-bold text-white ${rarityColor}`}>
-                                        {isOwned ? g.rarity : '???'}
-                                    </div>
-                                    {isOwned && (
-                                        <p className="text-xs text-white/80 mt-2">{g.description}</p>
-                                    )}
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-        </div>
-    );
-};
-
-// Ny Gangemon Unlock komponent
-const NewGangemonUnlock = ({ newGangemon, onClose }) => {
-    console.log('NewGangemonUnlock rendered with:', newGangemon);
-    if (!newGangemon || newGangemon.length === 0) return null;
-    
-    return (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-            <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl p-8 max-w-md w-full text-center">
-                <h2 className="text-3xl font-bold text-white mb-4">🎉 Ny Gangemon!</h2>
-                {newGangemon.map(gangemon => (
-                    <div key={gangemon.id} className="mb-4">
-                        <div className="text-6xl mb-2 animate-bounce">{gangemon.emoji}</div>
-                        <h3 className="text-2xl font-bold text-white mb-2">{gangemon.name}</h3>
-                        <p className="text-white/90 mb-2">{gangemon.description}</p>
-                        <div className={`inline-block px-3 py-1 rounded-full text-sm font-bold text-white ${
-                            gangemon.rarity === 'common' ? 'bg-gray-500' :
-                            gangemon.rarity === 'rare' ? 'bg-blue-500' :
-                            gangemon.rarity === 'legendary' ? 'bg-purple-500' :
-                            'bg-yellow-500'
-                        }`}>
-                            {gangemon.rarity.toUpperCase()}
-                        </div>
-                    </div>
-                ))}
-                <button
-                    onClick={onClose}
-                    className="bg-white text-purple-600 px-6 py-3 rounded-xl font-bold text-lg hover:bg-gray-100 transition-colors"
-                >
-                    Fantastisk! 🚀
-                </button>
-            </div>
-        </div>
-    );
-};
+// Ny Gangemon Unlock komponent (temporarily removed)
 
 // Badge Collection komponent
 const BadgeCollection = ({ badges, onClose }) => {
@@ -732,7 +565,7 @@ const UserSelect = ({ onUserSelect, onNewUser }) => {
 };
 
 // FORENKLET StartMenu komponent
-const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, setIsMuted, currentAvatar, setCurrentAvatar, currentTheme, setCurrentTheme, powerUps, usePowerUp, dailyChallenge, soundVolume, setSoundVolume, soundType, setSoundType, soundFrequency, setSoundFrequency, playSfx, currentUser, onSwitchUser, onShowStats, onDeleteCurrentUser, gangemon, onShowGangemon, badges, onShowBadges }) => {
+const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, setIsMuted, currentAvatar, setCurrentAvatar, currentTheme, setCurrentTheme, powerUps, usePowerUp, dailyChallenge, soundVolume, setSoundVolume, soundType, setSoundType, soundFrequency, setSoundFrequency, playSfx, currentUser, onSwitchUser, onShowStats, onDeleteCurrentUser, badges, onShowBadges }) => {
     const [gameMode, setGameMode] = useState(null); // 'classic' or 'adventure'
     const [selectedTable, setSelectedTable] = useState(null);
     const [showSettings, setShowSettings] = useState(false);
@@ -956,13 +789,7 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                 >
                     📊
                 </button>
-                <button
-                    onClick={onShowGangemon}
-                    className="p-3 rounded-xl text-white font-bold transition-all duration-200 bg-purple-500 hover:bg-purple-600"
-                    title="Gangemon Collection"
-                >
-                    🎮
-                </button>
+                {/* Gangemon button temporarily removed */}
                 <button
                     onClick={onShowBadges}
                     className="p-3 rounded-xl text-white font-bold transition-all duration-200 bg-yellow-500 hover:bg-yellow-600"
@@ -1007,12 +834,7 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                 >
                     📊 Statistikk
                 </button>
-                <button
-                    onClick={onShowGangemon}
-                    className="p-2 rounded-lg text-white font-bold transition-all duration-200 bg-purple-500 hover:bg-purple-600"
-                >
-                    🎮 Gangemon
-                </button>
+                {/* Gangemon button temporarily removed */}
                 <button
                     onClick={onShowBadges}
                     className="p-2 rounded-lg text-white font-bold transition-all duration-200 bg-yellow-500 hover:bg-yellow-600"
@@ -1383,9 +1205,7 @@ const App = () => {
     const [badges, setBadges] = useState([]);
     const [streakForBadge, setStreakForBadge] = useState(0);
     const [lastRushSummary, setLastRushSummary] = useState(null);
-    const [gangemon, setGangemon] = useState([]);
-    const [newGangemonUnlocked, setNewGangemonUnlocked] = useState([]);
-    const [showGangemonCollection, setShowGangemonCollection] = useState(false);
+    // Gangemon state temporarily removed
     const [showBadgeCollection, setShowBadgeCollection] = useState(false);
     
     // Nye state for alle funksjoner
@@ -1419,7 +1239,6 @@ const App = () => {
 
     // Brukerhåndtering
     const handleUserSelect = (userName, data) => {
-        console.log('handleUserSelect called with:', { userName, data });
         setCurrentUserState(userName);
         setUserData(data);
         setScore(data.score || 0);
@@ -1447,8 +1266,7 @@ const App = () => {
             }
         });
         setBadges(data.badges || []);
-        console.log('Setting gangemon to:', data.gangemon || []);
-        setGangemon(data.gangemon || []);
+        // Gangemon loading temporarily removed
         setDailyChallenge(getDailyChallenge());
         setCurrentView('menu');
     };
@@ -1463,8 +1281,8 @@ const App = () => {
                 isMuted,
                 powerUps,
                 stats,
-                badges,
-                gangemon
+                badges
+                // gangemon temporarily removed
             };
             saveUserData(currentUser, updatedData);
             setUserData(updatedData);
@@ -1489,7 +1307,7 @@ const App = () => {
                 soundFrequency: localStorage.getItem('gangetabell-sound-frequency') || 'normal',
                 powerUps: { double: { active: false, endTime: 0 }, hint: { uses: 0 }, time: { uses: 0 } },
                 badges: [],
-                gangemon: [],
+                // gangemon temporarily removed
                 stats: {
                     totalCorrect: 0,
                     maxStreak: 0,
@@ -1532,7 +1350,7 @@ const App = () => {
         if (currentUser) {
             saveCurrentUserData();
         }
-    }, [score, currentAvatar, currentTheme, isMuted, powerUps, stats, badges, gangemon]);
+    }, [score, currentAvatar, currentTheme, isMuted, powerUps, stats, badges]);
     const [trophies, setTrophies] = useState(() => {
         try { return JSON.parse(localStorage.getItem('gangetabell-trophies') || '[]'); } catch { return []; }
     });
@@ -1678,23 +1496,7 @@ const App = () => {
             setTimeout(() => setConfettiBurst(false), 1200);
         }
 
-        // Sjekk nye Gangemon (basert på antall riktige svar, ikke score)
-        // Kun sjekk for nye Gangemon hvis spilleren faktisk har svart riktig på et spørsmål
-        if (isCorrect) {
-            // Bruk den oppdaterte totalCorrect verdien
-            const updatedTotalCorrect = stats.totalCorrect + 1;
-            console.log('Checking Gangemon unlock:', { totalCorrect: updatedTotalCorrect, currentGangemon: gangemon });
-            const newGangemon = checkGangemonUnlock(updatedTotalCorrect, gangemon);
-            console.log('New Gangemon found:', newGangemon);
-            if (newGangemon.length > 0) {
-                const updatedGangemon = [...gangemon, ...newGangemon.map(g => g.id)];
-                setGangemon(updatedGangemon);
-                setNewGangemonUnlocked(newGangemon);
-                playSfx('badge');
-                setConfettiBurst(true);
-                setTimeout(() => setConfettiBurst(false), 2000);
-            }
-        }
+        // Gangemon unlock logic temporarily removed
 
         // Oppdater daglig utfordring
         if (isCorrect && dailyChallenge && !dailyChallenge.completed) {
@@ -1837,17 +1639,7 @@ const SOUNDS = {
         setCurrentView('userSelect');
     };
 
-    const handleShowGangemon = () => {
-        setShowGangemonCollection(true);
-    };
-
-    const handleCloseGangemon = () => {
-        setShowGangemonCollection(false);
-    };
-
-    const handleCloseNewGangemon = () => {
-        setNewGangemonUnlocked([]);
-    };
+    // Gangemon handlers temporarily removed
 
     const handleShowBadges = () => {
         setShowBadgeCollection(true);
@@ -1900,8 +1692,7 @@ const SOUNDS = {
                         onSwitchUser={() => setCurrentView('userSelect')}
                         onShowStats={() => setCurrentView('stats')}
                         onDeleteCurrentUser={handleDeleteCurrentUser}
-                        gangemon={gangemon}
-                        onShowGangemon={handleShowGangemon}
+                        // Gangemon props temporarily removed
                         badges={badges}
                         onShowBadges={handleShowBadges}
                     />
@@ -1969,13 +1760,7 @@ const SOUNDS = {
                     </div>
                 )}
 
-                {/* Gangemon Collection Modal */}
-                {showGangemonCollection && (
-                    <GangemonCollection 
-                        gangemon={gangemon}
-                        onClose={handleCloseGangemon}
-                    />
-                )}
+                {/* Gangemon Collection Modal temporarily removed */}
 
                 {/* Badge Collection Modal */}
                 {showBadgeCollection && (
@@ -1985,11 +1770,7 @@ const SOUNDS = {
                     />
                 )}
 
-                {/* New Gangemon Unlock Modal */}
-                <NewGangemonUnlock 
-                    newGangemon={newGangemonUnlocked}
-                    onClose={handleCloseNewGangemon}
-                />
+                {/* New Gangemon Unlock Modal temporarily removed */}
             </div>
         </div>
     );
