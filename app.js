@@ -89,6 +89,19 @@ const setCurrentUser = (userName) => {
 };
 
 // Hjelpefunksjoner
+// Normaliserer powerUps-objektet fra lagrede eller ufullstendige data
+const normalizePowerUps = (raw) => {
+    const defaults = { double: { active: false, endTime: 0 }, hint: { uses: 0 }, time: { uses: 0 } };
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return defaults;
+    return {
+        double: {
+            active: Boolean(raw.double && raw.double.active),
+            endTime: Number(raw.double && raw.double.endTime) || 0
+        },
+        hint: { uses: Number(raw.hint && raw.hint.uses) || 0 },
+        time: { uses: Number(raw.time && raw.time.uses) || 0 }
+    };
+};
 const getCurrentLevel = (score) => {
     for (let i = LEVELS.length - 1; i >= 0; i--) {
         if (score >= LEVELS[i].minScore) {
@@ -341,7 +354,7 @@ const UserSelect = ({ onUserSelect, onNewUser }) => {
                 soundVolume: 0.3,
                 soundType: 'soft',
                 soundFrequency: 'normal',
-                powerUps: [],
+                powerUps: normalizePowerUps(),
                 stickers: [],
                 trophies: [],
                 stats: {
@@ -966,7 +979,7 @@ const App = () => {
         setCurrentAvatar(data.currentAvatar || AVATARS[0]);
         setCurrentTheme(data.currentTheme || THEMES[0]);
         setIsMuted(data.isMuted || false);
-        setPowerUps(data.powerUps || { double: { active: false, endTime: 0 }, hint: { uses: 0 }, time: { uses: 0 } });
+        setPowerUps(normalizePowerUps(data.powerUps));
         setStats(data.stats || { 
             totalCorrect: 0, 
             maxStreak: 0, 
@@ -1145,7 +1158,7 @@ const App = () => {
         let finalPoints = points;
         
         // 2x poeng power-up
-        if (powerUps && powerUps.double && powerUps.double.active && Date.now() < powerUps.double.endTime) {
+        if (powerUps?.double?.active && Date.now() < (powerUps?.double?.endTime || 0)) {
             finalPoints *= 2;
         }
 
@@ -1335,7 +1348,7 @@ const SOUNDS = {
                 <ConfettiLayer burst={confettiBurst} />
                 
                 {/* Power-up indikator */}
-                {powerUps && powerUps.double && powerUps.double.active && Date.now() < powerUps.double.endTime && (
+                {powerUps?.double?.active && Date.now() < (powerUps?.double?.endTime || 0) && (
                     <div className="fixed top-4 right-4 bg-yellow-400 text-black px-4 py-2 rounded-xl font-bold z-50 power-up-active">
                         💎 2x Poeng aktivt!
                     </div>
