@@ -65,6 +65,10 @@ const saveUserData = (userName, data) => {
     localStorage.setItem(`gangetabell-user-${userName}`, JSON.stringify(data));
 };
 
+const deleteUserData = (userName) => {
+    localStorage.removeItem(`gangetabell-user-${userName}`);
+};
+
 const getAllUsers = () => {
     const users = [];
     for (let i = 0; i < localStorage.length; i++) {
@@ -343,6 +347,17 @@ const UserSelect = ({ onUserSelect, onNewUser }) => {
         setUsers(getAllUsers());
     }, []);
 
+    const handleDeleteUser = (userName) => {
+        if (!userName) return;
+        if (!confirm(`Slette bruker "${userName}"? Dette kan ikke angres.`)) return;
+        deleteUserData(userName);
+        const current = getCurrentUser();
+        if (current === userName) {
+            localStorage.removeItem('gangetabell-current-user');
+        }
+        setUsers(getAllUsers());
+    };
+
     const handleNewUser = () => {
         if (newUserName.trim()) {
             const userName = newUserName.trim();
@@ -383,21 +398,30 @@ const UserSelect = ({ onUserSelect, onNewUser }) => {
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4 mb-6">
                     {users.map(user => (
-                        <button
-                            key={user.name}
-                            onClick={() => onUserSelect(user.name, user)}
-                            className="bg-white/30 hover:bg-white/50 active:bg-white/60 text-white p-4 rounded-xl transition-all duration-200 text-left touch-target"
-                        >
-                            <div className="flex items-center gap-3">
-                                <span className="text-2xl md:text-3xl">{user.currentAvatar?.emoji || '👤'}</span>
-                                <div>
-                                    <h3 className="text-base md:text-lg font-bold">{user.name}</h3>
-                                    <p className="text-xs md:text-sm opacity-80">
-                                        {getCurrentLevel(user.score || 0).emoji} {getCurrentLevel(user.score || 0).name} · {user.score || 0} poeng
-                                    </p>
+                        <div key={user.name} className="flex items-center gap-2">
+                            <button
+                                onClick={() => onUserSelect(user.name, user)}
+                                className="flex-1 bg-white/30 hover:bg-white/50 active:bg-white/60 text-white p-4 rounded-xl transition-all duration-200 text-left touch-target"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <span className="text-2xl md:text-3xl">{user.currentAvatar?.emoji || '👤'}</span>
+                                    <div>
+                                        <h3 className="text-base md:text-lg font-bold">{user.name}</h3>
+                                        <p className="text-xs md:text-sm opacity-80">
+                                            {getCurrentLevel(user.score || 0).emoji} {getCurrentLevel(user.score || 0).name} · {user.score || 0} poeng
+                                        </p>
+                                    </div>
                                 </div>
-                            </div>
-                        </button>
+                            </button>
+                            <button
+                                onClick={() => handleDeleteUser(user.name)}
+                                className="bg-red-500 hover:bg-red-600 active:bg-red-700 text-white p-3 rounded-xl font-bold"
+                                title="Slett bruker"
+                                aria-label={`Slett ${user.name}`}
+                            >
+                                🗑️
+                            </button>
+                        </div>
                     ))}
                 </div>
 
