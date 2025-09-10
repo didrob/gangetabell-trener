@@ -431,7 +431,7 @@ const UserSelect = ({ onUserSelect, onNewUser }) => {
 };
 
 // FORENKLET StartMenu komponent
-const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, setIsMuted, currentAvatar, setCurrentAvatar, currentTheme, setCurrentTheme, powerUps, usePowerUp, dailyChallenge, soundVolume, setSoundVolume, soundType, setSoundType, soundFrequency, setSoundFrequency, playSfx, currentUser, onSwitchUser }) => {
+const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, setIsMuted, currentAvatar, setCurrentAvatar, currentTheme, setCurrentTheme, powerUps, usePowerUp, dailyChallenge, soundVolume, setSoundVolume, soundType, setSoundType, soundFrequency, setSoundFrequency, playSfx, currentUser, onSwitchUser, onShowStats }) => {
     const [selectedTable, setSelectedTable] = useState(null);
     const [showSettings, setShowSettings] = useState(false);
     const [showAvatarSelect, setShowAvatarSelect] = useState(false);
@@ -583,7 +583,7 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                     🎵
                 </button>
                 <button
-                    onClick={() => setCurrentView('stats')}
+                    onClick={onShowStats}
                     className="p-3 rounded-xl text-white font-bold transition-all duration-200 bg-indigo-500 hover:bg-indigo-600"
                     title="Statistikk"
                 >
@@ -621,7 +621,7 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                             ⚡ Power-ups
                 </button>
                 <button
-                    onClick={() => setCurrentView('stats')}
+                    onClick={onShowStats}
                     className="p-2 rounded-lg text-white font-bold transition-all duration-200 bg-indigo-500 hover:bg-indigo-600"
                 >
                     📊 Statistikk
@@ -1369,6 +1369,7 @@ const SOUNDS = {
                         playSfx={playSfx}
                         currentUser={currentUser}
                         onSwitchUser={() => setCurrentView('userSelect')}
+                        onShowStats={() => setCurrentView('stats')}
                     />
                 ) : currentView === 'stats' ? (
                     <StatsOverview 
