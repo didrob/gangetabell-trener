@@ -634,6 +634,8 @@ const UserSelect = ({ onUserSelect, onNewUser }) => {
                 powerUps: normalizePowerUps(),
                 stickers: [],
                 trophies: [],
+                gangemon: [],
+                badges: [],
                 stats: {
                     totalCorrect: 0,
                     totalWrong: 0,
@@ -1417,6 +1419,7 @@ const App = () => {
 
     // Brukerhåndtering
     const handleUserSelect = (userName, data) => {
+        console.log('handleUserSelect called with:', { userName, data });
         setCurrentUserState(userName);
         setUserData(data);
         setScore(data.score || 0);
@@ -1444,6 +1447,7 @@ const App = () => {
             }
         });
         setBadges(data.badges || []);
+        console.log('Setting gangemon to:', data.gangemon || []);
         setGangemon(data.gangemon || []);
         setDailyChallenge(getDailyChallenge());
         setCurrentView('menu');
