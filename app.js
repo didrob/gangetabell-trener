@@ -487,6 +487,7 @@ const GangemonCollection = ({ gangemon, onClose }) => {
 
 // Ny Gangemon Unlock komponent
 const NewGangemonUnlock = ({ newGangemon, onClose }) => {
+    console.log('NewGangemonUnlock rendered with:', newGangemon);
     if (!newGangemon || newGangemon.length === 0) return null;
     
     return (
@@ -1679,7 +1680,9 @@ const App = () => {
         // Sjekk nye Gangemon (basert på antall riktige svar, ikke score)
         // Kun sjekk for nye Gangemon hvis spilleren faktisk har svart riktig på et spørsmål
         if (isCorrect) {
+            console.log('Checking Gangemon unlock:', { totalCorrect: stats.totalCorrect, currentGangemon: gangemon });
             const newGangemon = checkGangemonUnlock(stats.totalCorrect, gangemon);
+            console.log('New Gangemon found:', newGangemon);
             if (newGangemon.length > 0) {
                 const updatedGangemon = [...gangemon, ...newGangemon.map(g => g.id)];
                 setGangemon(updatedGangemon);
