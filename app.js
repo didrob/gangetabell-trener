@@ -660,20 +660,20 @@ const UserSelect = ({ onUserSelect, onNewUser }) => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4 mb-6">
                     {users.map(user => (
                         <div key={user.name} className="flex items-center gap-2">
-                            <button
-                                onClick={() => onUserSelect(user.name, user)}
+                        <button
+                            onClick={() => onUserSelect(user.name, user)}
                                 className="flex-1 bg-white/30 hover:bg-white/50 active:bg-white/60 text-white p-4 rounded-xl transition-all duration-200 text-left touch-target"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <span className="text-2xl md:text-3xl">{user.currentAvatar?.emoji || '👤'}</span>
-                                    <div>
-                                        <h3 className="text-base md:text-lg font-bold">{user.name}</h3>
-                                        <p className="text-xs md:text-sm opacity-80">
-                                            {getCurrentLevel(user.score || 0).emoji} {getCurrentLevel(user.score || 0).name} · {user.score || 0} poeng
-                                        </p>
-                                    </div>
+                        >
+                            <div className="flex items-center gap-3">
+                                <span className="text-2xl md:text-3xl">{user.currentAvatar?.emoji || '👤'}</span>
+                                <div>
+                                    <h3 className="text-base md:text-lg font-bold">{user.name}</h3>
+                                    <p className="text-xs md:text-sm opacity-80">
+                                        {getCurrentLevel(user.score || 0).emoji} {getCurrentLevel(user.score || 0).name} · {user.score || 0} poeng
+                                    </p>
                                 </div>
-                            </button>
+                            </div>
+                        </button>
                             <button
                                 onClick={() => handleDeleteUser(user.name)}
                                 className="bg-red-500 hover:bg-red-600 active:bg-red-700 text-white p-3 rounded-xl font-bold"
@@ -852,7 +852,7 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
 
             {/* Tabell valg - kun vis hvis spillmodus er valgt */}
             {gameMode && (
-                <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 mb-8">
+            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 mb-8">
                     <div className="flex items-center justify-between mb-6">
                         <h2 className="text-2xl font-bold text-white">Velg tabell:</h2>
                         <button
@@ -862,52 +862,52 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                             ← Tilbake til modus
                         </button>
                     </div>
-                    <div className="grid grid-cols-5 gap-3 mb-4">
-                        {[2, 3, 4, 5, 6, 7, 8, 9, 10].map(table => (
-                            <button
-                                key={table}
-                                onClick={() => setSelectedTable(selectedTable === table ? null : table)}
-                                className={`p-3 rounded-xl text-lg font-bold transition-all duration-200 ${
-                                    selectedTable === table 
-                                        ? 'bg-yellow-400 text-black transform scale-105' 
-                                        : 'bg-white/30 text-white hover:bg-white/50'
-                                }`}
-                            >
-                                {table}
-                            </button>
-                        ))}
-                    </div>
-                    <button
-                        onClick={() => setSelectedTable(null)}
-                        className={`p-3 rounded-xl text-lg font-bold transition-all duration-200 ${
-                            selectedTable === null 
-                                ? 'bg-yellow-400 text-black transform scale-105' 
-                                : 'bg-white/30 text-white hover:bg-white/50'
-                        }`}
-                    >
-                        🎲 Blandet
-                    </button>
+                <div className="grid grid-cols-5 gap-3 mb-4">
+                    {[2, 3, 4, 5, 6, 7, 8, 9, 10].map(table => (
+                        <button
+                            key={table}
+                            onClick={() => setSelectedTable(selectedTable === table ? null : table)}
+                            className={`p-3 rounded-xl text-lg font-bold transition-all duration-200 ${
+                                selectedTable === table 
+                                    ? 'bg-yellow-400 text-black transform scale-105' 
+                                    : 'bg-white/30 text-white hover:bg-white/50'
+                            }`}
+                        >
+                            {table}
+                        </button>
+                    ))}
                 </div>
+                <button
+                    onClick={() => setSelectedTable(null)}
+                    className={`p-3 rounded-xl text-lg font-bold transition-all duration-200 ${
+                        selectedTable === null 
+                            ? 'bg-yellow-400 text-black transform scale-105' 
+                            : 'bg-white/30 text-white hover:bg-white/50'
+                    }`}
+                >
+                    🎲 Blandet
+                </button>
+            </div>
             )}
 
             {/* Start knapper - kun vis hvis spillmodus og tabell er valgt */}
             {gameMode && (
-                <div className="flex flex-col md:flex-row items-center justify-center gap-4 mb-8">
-                    <button
-                        onClick={handleStart}
-                        className="bg-green-500 hover:bg-green-600 text-white text-2xl md:text-3xl font-bold py-4 md:py-6 px-8 md:px-12 rounded-2xl transition-all duration-200 transform hover:scale-105 shadow-2xl w-full md:w-auto"
-                    >
+            <div className="flex flex-col md:flex-row items-center justify-center gap-4 mb-8">
+                <button
+                    onClick={handleStart}
+                    className="bg-green-500 hover:bg-green-600 text-white text-2xl md:text-3xl font-bold py-4 md:py-6 px-8 md:px-12 rounded-2xl transition-all duration-200 transform hover:scale-105 shadow-2xl w-full md:w-auto"
+                >
                         🚀 START {gameMode === 'classic' ? 'KLASSISK' : 'ADVENTURE'}
-                    </button>
+                </button>
                     {gameMode === 'adventure' && (
-                        <button
-                            onClick={() => onStartRush(selectedTable)}
-                            className="bg-orange-500 hover:bg-orange-600 text-white text-xl md:text-2xl font-bold py-3 md:py-4 px-6 md:px-8 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-xl w-full md:w-auto"
-                        >
-                            ⏱️ Rush 60s
-                        </button>
+                <button
+                    onClick={() => onStartRush(selectedTable)}
+                    className="bg-orange-500 hover:bg-orange-600 text-white text-xl md:text-2xl font-bold py-3 md:py-4 px-6 md:px-8 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-xl w-full md:w-auto"
+                >
+                    ⏱️ Rush 60s
+                </button>
                     )}
-                </div>
+            </div>
             )}
 
             {/* Kompakt navigasjon */}
@@ -1252,9 +1252,9 @@ const Game = ({ selectedTable, onBackToMenu, onScoreUpdate, onGameOver, mode = '
             <div className="flex justify-between items-center mb-8">
                 <button
                     onClick={onBackToMenu}
-                    className="bg-red-500 hover:bg-red-600 text-white text-xl font-bold py-3 px-6 rounded-2xl transition-all duration-200"
+                    className="bg-red-500 hover:bg-red-600 text-white text-xl font-bold py-3 px-6 rounded-2xl transition-all duration-200 transform hover:scale-105 shadow-lg"
                 >
-                    ← Tilbake
+                    ← Tilbake til meny
                 </button>
                 <div className="flex items-center gap-4 text-white text-xl">
                     {mode === 'rush' && (
@@ -1568,6 +1568,9 @@ const App = () => {
 
     const handleBackToMenu = () => {
         setCurrentView('menu');
+        // Reset game mode when going back to menu
+        setSelectedTable(null);
+        setMode('normal');
     };
 
     const usePowerUp = (powerUpId) => {
@@ -1803,6 +1806,9 @@ const SOUNDS = {
             });
         }
         setCurrentView('menu');
+        // Reset game mode when game ends
+        setSelectedTable(null);
+        setMode('normal');
     };
 
     const handleDeleteCurrentUser = () => {
@@ -1920,7 +1926,13 @@ const SOUNDS = {
                     <div className="mt-6 bg-white/30 backdrop-blur-sm rounded-2xl p-5 text-white">
                         <div className="text-2xl font-bold mb-2">⏱️ Rush resultater</div>
                         <div className="text-lg">Riktig: <span className="font-bold">{lastRushSummary.correct}</span> av {lastRushSummary.total}</div>
-                        <div className="text-lg">Bra jobbet! Prøv igjen og slå rekorden din! 🏆</div>
+                        <div className="text-lg mb-4">Bra jobbet! Prøv igjen og slå rekorden din! 🏆</div>
+                        <button
+                            onClick={() => setLastRushSummary(null)}
+                            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl font-bold transition-all duration-200"
+                        >
+                            ✕ Lukk resultater
+                        </button>
                     </div>
                 )}
                 
