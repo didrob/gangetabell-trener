@@ -1677,14 +1677,17 @@ const App = () => {
         }
 
         // Sjekk nye Gangemon (basert på antall riktige svar, ikke score)
-        const newGangemon = checkGangemonUnlock(stats.totalCorrect, gangemon);
-        if (newGangemon.length > 0) {
-            const updatedGangemon = [...gangemon, ...newGangemon.map(g => g.id)];
-            setGangemon(updatedGangemon);
-            setNewGangemonUnlocked(newGangemon);
-            playSfx('badge');
-            setConfettiBurst(true);
-            setTimeout(() => setConfettiBurst(false), 2000);
+        // Kun sjekk for nye Gangemon hvis spilleren faktisk har svart riktig på et spørsmål
+        if (isCorrect) {
+            const newGangemon = checkGangemonUnlock(stats.totalCorrect, gangemon);
+            if (newGangemon.length > 0) {
+                const updatedGangemon = [...gangemon, ...newGangemon.map(g => g.id)];
+                setGangemon(updatedGangemon);
+                setNewGangemonUnlocked(newGangemon);
+                playSfx('badge');
+                setConfettiBurst(true);
+                setTimeout(() => setConfettiBurst(false), 2000);
+            }
         }
 
         // Oppdater daglig utfordring
