@@ -365,7 +365,7 @@ const BadgeCollection = ({ badges, onClose }) => {
         { id: 'speed-demon', name: 'Speed Demon', emoji: '⚡', description: 'Svar riktig på under 2 sekunder', color: 'bg-indigo-500' },
         { id: 'perfectionist', name: 'Perfeksjonist', emoji: '💎', description: 'Få 100% riktig i en runde', color: 'bg-pink-500' },
         { id: 'daily-warrior', name: 'Daglig Kriger', emoji: '🗡️', description: 'Fullfør daglig utfordring', color: 'bg-teal-500' },
-        { id: 'gangemon-master', name: 'Gangemon Mester', emoji: '🎮', description: 'Samle alle Gangemon', color: 'bg-cyan-500' }
+        // { id: 'gangemon-master', name: 'Gangemon Mester', emoji: '🎮', description: 'Samle alle Gangemon', color: 'bg-cyan-500' } // temporarily removed
     ];
     
     return (
@@ -467,7 +467,7 @@ const UserSelect = ({ onUserSelect, onNewUser }) => {
                 powerUps: normalizePowerUps(),
                 stickers: [],
                 trophies: [],
-                gangemon: [],
+                // gangemon temporarily removed
                 badges: [],
                 stats: {
                     totalCorrect: 0,
@@ -603,7 +603,7 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                             {currentLevel.emoji} {currentLevel.name} · <span className="font-bold">{score}</span> poeng
                         </p>
                         <p className="text-sm text-white/80">
-                            🎮 {gangemon.length} Gangemon samlet
+                            🎮 Gangemon system midlertidig deaktivert
                         </p>
                     </div>
                 </div>
@@ -1755,7 +1755,7 @@ const SOUNDS = {
                             {badges.includes('speed-demon') && <span className="px-2 py-1 rounded-lg bg-indigo-500 text-white text-sm">⚡ Speed Demon</span>}
                             {badges.includes('perfectionist') && <span className="px-2 py-1 rounded-lg bg-pink-500 text-white text-sm">💎 Perfeksjonist</span>}
                             {badges.includes('daily-warrior') && <span className="px-2 py-1 rounded-lg bg-teal-500 text-white text-sm">🗡️ Daglig Kriger</span>}
-                            {badges.includes('gangemon-master') && <span className="px-2 py-1 rounded-lg bg-cyan-500 text-white text-sm">🎮 Gangemon Mester</span>}
+                            {/* {badges.includes('gangemon-master') && <span className="px-2 py-1 rounded-lg bg-cyan-500 text-white text-sm">🎮 Gangemon Mester</span>} */}
                         </div>
                     </div>
                 )}
