@@ -1,10 +1,12 @@
-const CACHE_NAME = 'gangetabell-cache-v3';
+const CACHE_NAME = 'gangetabell-cache-v4';
 const ASSETS = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
   '/styles.css',
   '/app.js',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
   '/icons/icon-192.svg',
   '/icons/icon-512.svg'
 ];
