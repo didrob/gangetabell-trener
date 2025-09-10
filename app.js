@@ -166,6 +166,136 @@ const generateWrongAnswers = (correctAnswer) => {
     return wrongAnswers;
 };
 
+// Statistikk komponent
+const StatsOverview = ({ stats, onBack }) => {
+    const getTableStats = () => {
+        const tables = [2, 3, 4, 5, 6, 7, 8, 9, 10];
+        return tables.map(table => {
+            const tableStat = stats.tableStats?.[table] || { correct: 0, total: 0 };
+            const percentage = tableStat.total > 0 ? Math.round((tableStat.correct / tableStat.total) * 100) : 0;
+            return {
+                table,
+                correct: tableStat.correct,
+                total: tableStat.total,
+                percentage
+            };
+        }).sort((a, b) => a.percentage - b.percentage); // Sorter etter lavest prosent først
+    };
+
+    const tableStats = getTableStats();
+    const mixedStat = stats.tableStats?.mixed || { correct: 0, total: 0 };
+    const mixedPercentage = mixedStat.total > 0 ? Math.round((mixedStat.correct / mixedStat.total) * 100) : 0;
+
+    const getColorClass = (percentage) => {
+        if (percentage >= 80) return 'bg-green-500';
+        if (percentage >= 60) return 'bg-yellow-500';
+        if (percentage >= 40) return 'bg-orange-500';
+        return 'bg-red-500';
+    };
+
+    const getRecommendation = () => {
+        const needsWork = tableStats.filter(t => t.percentage < 70 && t.total > 0);
+        if (needsWork.length === 0) {
+            return "🎉 Fantastisk! Du behersker alle gangetabellene godt!";
+        }
+        const worst = needsWork[0];
+        return `💡 Anbefaling: Øv mer på ${worst.table}-gangen (${worst.percentage}% riktig)`;
+    };
+
+    return (
+        <div className="text-center p-4 md:p-8 max-w-4xl mx-auto">
+            <div className="flex items-center justify-between mb-8">
+                <button
+                    onClick={onBack}
+                    className="bg-red-500 hover:bg-red-600 text-white text-xl font-bold py-3 px-6 rounded-2xl transition-all duration-200"
+                >
+                    ← Tilbake
+                </button>
+                <h1 className="text-3xl md:text-4xl font-bold rainbow-text">
+                    📊 Statistikk
+                </h1>
+                <div></div>
+            </div>
+
+            {/* Anbefaling */}
+            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4 mb-6">
+                <p className="text-lg text-white font-bold">{getRecommendation()}</p>
+            </div>
+
+            {/* Blandet statistikk */}
+            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 mb-6">
+                <h2 className="text-2xl font-bold text-white mb-4">🎲 Blandet oppgaver</h2>
+                <div className="flex items-center justify-center gap-4">
+                    <div className="text-4xl font-bold text-white">
+                        {mixedStat.correct}/{mixedStat.total}
+                    </div>
+                    <div className="text-2xl font-bold text-white">
+                        ({mixedPercentage}%)
+                    </div>
+                </div>
+                <div className="w-full bg-white/20 rounded-full h-4 mt-4">
+                    <div 
+                        className={`h-4 rounded-full transition-all duration-300 ${getColorClass(mixedPercentage)}`}
+                        style={{ width: `${mixedPercentage}%` }}
+                    ></div>
+                </div>
+            </div>
+
+            {/* Gangetabell statistikk */}
+            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6">
+                <h2 className="text-2xl font-bold text-white mb-6">📈 Gangetabell oversikt</h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    {tableStats.map(({ table, correct, total, percentage }) => (
+                        <div key={table} className="bg-white/10 rounded-xl p-4">
+                            <div className="text-2xl font-bold text-white mb-2">{table}-gangen</div>
+                            <div className="text-lg text-white mb-2">
+                                {correct}/{total}
+                            </div>
+                            <div className="text-sm text-white mb-3">
+                                {percentage}% riktig
+                            </div>
+                            <div className="w-full bg-white/20 rounded-full h-2">
+                                <div 
+                                    className={`h-2 rounded-full transition-all duration-300 ${getColorClass(percentage)}`}
+                                    style={{ width: `${percentage}%` }}
+                                ></div>
+                            </div>
+                            {percentage < 70 && total > 0 && (
+                                <div className="text-xs text-red-300 mt-2">💪 Trenger øving</div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Generell statistikk */}
+            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 mt-6">
+                <h2 className="text-2xl font-bold text-white mb-4">🏆 Generell statistikk</h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-white">
+                    <div className="text-center">
+                        <div className="text-2xl font-bold">{stats.totalCorrect}</div>
+                        <div className="text-sm">Riktige svar</div>
+                    </div>
+                    <div className="text-center">
+                        <div className="text-2xl font-bold">{stats.maxStreak}</div>
+                        <div className="text-sm">Beste streak</div>
+                    </div>
+                    <div className="text-center">
+                        <div className="text-2xl font-bold">
+                            {stats.fastestAnswer < 999999 ? `${stats.fastestAnswer}ms` : 'N/A'}
+                        </div>
+                        <div className="text-sm">Raskeste svar</div>
+                    </div>
+                    <div className="text-center">
+                        <div className="text-2xl font-bold">{stats.dailyCorrect}</div>
+                        <div className="text-sm">I dag</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 // Confetti komponent
 const ConfettiLayer = ({ burst }) => {
     if (!burst) return null;
@@ -452,13 +582,20 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                 >
                     🎵
                 </button>
+                <button
+                    onClick={() => setCurrentView('stats')}
+                    className="p-3 rounded-xl text-white font-bold transition-all duration-200 bg-indigo-500 hover:bg-indigo-600"
+                    title="Statistikk"
+                >
+                    📊
+                </button>
             </div>
 
             {/* Kollapsible seksjoner */}
             {showSettings && (
                 <div className="mt-6 bg-white/20 backdrop-blur-sm rounded-2xl p-4">
                     <h3 className="text-lg font-bold text-white mb-3">⚙️ Innstillinger</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                         <button
                             onClick={() => setShowAvatarSelect(!showAvatarSelect)}
                             className="p-2 rounded-lg text-white font-bold transition-all duration-200 bg-blue-500 hover:bg-blue-600"
@@ -482,6 +619,12 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                             className="p-2 rounded-lg text-white font-bold transition-all duration-200 bg-purple-500 hover:bg-purple-600"
                 >
                             ⚡ Power-ups
+                </button>
+                <button
+                    onClick={() => setCurrentView('stats')}
+                    className="p-2 rounded-lg text-white font-bold transition-all duration-200 bg-indigo-500 hover:bg-indigo-600"
+                >
+                    📊 Statistikk
                 </button>
             </div>
                 </div>
@@ -800,7 +943,19 @@ const App = () => {
             maxStreak: 0,
             fastestAnswer: 999999,
             dailyCorrect: 0,
-            lastPlayDate: new Date().toDateString()
+            lastPlayDate: new Date().toDateString(),
+            tableStats: {
+                2: { correct: 0, total: 0 },
+                3: { correct: 0, total: 0 },
+                4: { correct: 0, total: 0 },
+                5: { correct: 0, total: 0 },
+                6: { correct: 0, total: 0 },
+                7: { correct: 0, total: 0 },
+                8: { correct: 0, total: 0 },
+                9: { correct: 0, total: 0 },
+                10: { correct: 0, total: 0 },
+                mixed: { correct: 0, total: 0 }
+            }
     });
 
     // Brukerhåndtering
@@ -812,7 +967,25 @@ const App = () => {
         setCurrentTheme(data.currentTheme || THEMES[0]);
         setIsMuted(data.isMuted || false);
         setPowerUps(data.powerUps || { double: { active: false, endTime: 0 }, hint: { uses: 0 }, time: { uses: 0 } });
-        setStats(data.stats || { totalCorrect: 0, maxStreak: 0, fastestAnswer: 999999, dailyCorrect: 0, lastPlayDate: new Date().toDateString() });
+        setStats(data.stats || { 
+            totalCorrect: 0, 
+            maxStreak: 0, 
+            fastestAnswer: 999999, 
+            dailyCorrect: 0, 
+            lastPlayDate: new Date().toDateString(),
+            tableStats: {
+                2: { correct: 0, total: 0 },
+                3: { correct: 0, total: 0 },
+                4: { correct: 0, total: 0 },
+                5: { correct: 0, total: 0 },
+                6: { correct: 0, total: 0 },
+                7: { correct: 0, total: 0 },
+                8: { correct: 0, total: 0 },
+                9: { correct: 0, total: 0 },
+                10: { correct: 0, total: 0 },
+                mixed: { correct: 0, total: 0 }
+            }
+        });
         setBadges(data.badges || []);
         setDailyChallenge(getDailyChallenge());
         setCurrentView('menu');
@@ -858,7 +1031,19 @@ const App = () => {
                     maxStreak: 0,
                     fastestAnswer: 999999,
                     dailyCorrect: 0,
-                    lastPlayDate: new Date().toDateString()
+                    lastPlayDate: new Date().toDateString(),
+                    tableStats: {
+                        2: { correct: 0, total: 0 },
+                        3: { correct: 0, total: 0 },
+                        4: { correct: 0, total: 0 },
+                        5: { correct: 0, total: 0 },
+                        6: { correct: 0, total: 0 },
+                        7: { correct: 0, total: 0 },
+                        8: { correct: 0, total: 0 },
+                        9: { correct: 0, total: 0 },
+                        10: { correct: 0, total: 0 },
+                        mixed: { correct: 0, total: 0 }
+                    }
                 },
                 createdAt: new Date().toISOString()
             };
@@ -977,6 +1162,24 @@ const App = () => {
                 fastestAnswer: Math.min(prev.fastestAnswer, answerTime || 999999)
             }));
         }
+
+        // Oppdater statistikk per gangetabell
+        setStats(prev => {
+            const tableKey = selectedTable || 'mixed';
+            const tableStats = prev.tableStats || {};
+            const currentTableStats = tableStats[tableKey] || { correct: 0, total: 0 };
+            
+            return {
+                ...prev,
+                tableStats: {
+                    ...tableStats,
+                    [tableKey]: {
+                        correct: currentTableStats.correct + (isCorrect ? 1 : 0),
+                        total: currentTableStats.total + 1
+                    }
+                }
+            };
+        });
 
         // Sjekk badges
         if (newScore >= 100 && !badges.includes('100-poeng')) {
@@ -1166,6 +1369,11 @@ const SOUNDS = {
                         playSfx={playSfx}
                         currentUser={currentUser}
                         onSwitchUser={() => setCurrentView('userSelect')}
+                    />
+                ) : currentView === 'stats' ? (
+                    <StatsOverview 
+                        stats={stats}
+                        onBack={() => setCurrentView('menu')}
                     />
                 ) : (
                     <Game 
