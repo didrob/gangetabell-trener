@@ -1616,17 +1616,7 @@ const App = () => {
         setScore(newScore);
         localStorage.setItem('gangetabell-score', newScore.toString());
 
-        // Oppdater stats
-        if (isCorrect) {
-            setStats(prev => ({
-                ...prev,
-                totalCorrect: prev.totalCorrect + 1,
-                dailyCorrect: prev.dailyCorrect + 1,
-                fastestAnswer: Math.min(prev.fastestAnswer, answerTime || 999999)
-            }));
-        }
-
-        // Oppdater statistikk per gangetabell
+        // Oppdater stats (kombiner begge oppdateringene i én)
         setStats(prev => {
             const tableKey = selectedTable || 'mixed';
             const tableStats = prev.tableStats || {};
@@ -1634,6 +1624,13 @@ const App = () => {
             
             return {
                 ...prev,
+                // Oppdater totalCorrect og dailyCorrect hvis riktig svar
+                ...(isCorrect && {
+                    totalCorrect: prev.totalCorrect + 1,
+                    dailyCorrect: prev.dailyCorrect + 1,
+                    fastestAnswer: Math.min(prev.fastestAnswer, answerTime || 999999)
+                }),
+                // Oppdater statistikk per gangetabell
                 tableStats: {
                     ...tableStats,
                     [tableKey]: {
@@ -1680,8 +1677,10 @@ const App = () => {
         // Sjekk nye Gangemon (basert på antall riktige svar, ikke score)
         // Kun sjekk for nye Gangemon hvis spilleren faktisk har svart riktig på et spørsmål
         if (isCorrect) {
-            console.log('Checking Gangemon unlock:', { totalCorrect: stats.totalCorrect, currentGangemon: gangemon });
-            const newGangemon = checkGangemonUnlock(stats.totalCorrect, gangemon);
+            // Bruk den oppdaterte totalCorrect verdien
+            const updatedTotalCorrect = stats.totalCorrect + 1;
+            console.log('Checking Gangemon unlock:', { totalCorrect: updatedTotalCorrect, currentGangemon: gangemon });
+            const newGangemon = checkGangemonUnlock(updatedTotalCorrect, gangemon);
             console.log('New Gangemon found:', newGangemon);
             if (newGangemon.length > 0) {
                 const updatedGangemon = [...gangemon, ...newGangemon.map(g => g.id)];
