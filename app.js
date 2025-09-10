@@ -651,6 +651,7 @@ const UserSelect = ({ onUserSelect, onNewUser }) => {
 
 // FORENKLET StartMenu komponent
 const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, setIsMuted, currentAvatar, setCurrentAvatar, currentTheme, setCurrentTheme, powerUps, usePowerUp, dailyChallenge, soundVolume, setSoundVolume, soundType, setSoundType, soundFrequency, setSoundFrequency, playSfx, currentUser, onSwitchUser, onShowStats, onDeleteCurrentUser, gangemon, onShowGangemon }) => {
+    const [gameMode, setGameMode] = useState(null); // 'classic' or 'adventure'
     const [selectedTable, setSelectedTable] = useState(null);
     const [showSettings, setShowSettings] = useState(false);
     const [showAvatarSelect, setShowAvatarSelect] = useState(false);
@@ -659,7 +660,7 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
     const [showPowerUps, setShowPowerUps] = useState(false);
 
     const handleStart = () => {
-        onStartGame(selectedTable);
+        onStartGame(selectedTable, gameMode);
     };
 
     const availableAvatars = getAvailableAvatars(score);
@@ -738,51 +739,97 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                 </div>
             )}
 
-            {/* Tabell valg - hovedfokus */}
-            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 mb-8">
-                <h2 className="text-2xl font-bold text-white mb-6">Velg tabell:</h2>
-                <div className="grid grid-cols-5 gap-3 mb-4">
-                    {[2, 3, 4, 5, 6, 7, 8, 9, 10].map(table => (
+            {/* Spillmodus valg */}
+            {!gameMode && (
+                <div className="mb-8">
+                    <h2 className="text-2xl font-bold text-white mb-6">Velg spillmodus</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+                        {/* Klassisk Modus */}
                         <button
-                            key={table}
-                            onClick={() => setSelectedTable(selectedTable === table ? null : table)}
-                            className={`p-3 rounded-xl text-lg font-bold transition-all duration-200 ${
-                                selectedTable === table 
-                                    ? 'bg-yellow-400 text-black transform scale-105' 
-                                    : 'bg-white/30 text-white hover:bg-white/50'
-                            }`}
+                            onClick={() => setGameMode('classic')}
+                            className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 text-white hover:bg-white/30 transition-all duration-200 hover:scale-105"
                         >
-                            {table}
+                            <div className="text-4xl mb-3">📚</div>
+                            <h3 className="text-xl font-bold mb-2">Klassisk Modus</h3>
+                            <p className="text-sm text-white/80">
+                                Tradisjonell gangetabell-trening. Velg en spesifikk tabell eller blandet oppgaver.
+                            </p>
                         </button>
-                    ))}
+                        
+                        {/* Adventure Modus */}
+                        <button
+                            onClick={() => setGameMode('adventure')}
+                            className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 text-white hover:bg-white/30 transition-all duration-200 hover:scale-105"
+                        >
+                            <div className="text-4xl mb-3">🎮</div>
+                            <h3 className="text-xl font-bold mb-2">Adventure Modus</h3>
+                            <p className="text-sm text-white/80">
+                                Samle Gangemon, bruk power-ups og fullfør daglige utfordringer!
+                            </p>
+                        </button>
+                    </div>
                 </div>
-                <button
-                    onClick={() => setSelectedTable(null)}
-                    className={`p-3 rounded-xl text-lg font-bold transition-all duration-200 ${
-                        selectedTable === null 
-                            ? 'bg-yellow-400 text-black transform scale-105' 
-                            : 'bg-white/30 text-white hover:bg-white/50'
-                    }`}
-                >
-                    🎲 Blandet
-                </button>
-            </div>
+            )}
 
-            {/* Start knapper - hovedhandling */}
-            <div className="flex flex-col md:flex-row items-center justify-center gap-4 mb-8">
-                <button
-                    onClick={handleStart}
-                    className="bg-green-500 hover:bg-green-600 text-white text-2xl md:text-3xl font-bold py-4 md:py-6 px-8 md:px-12 rounded-2xl transition-all duration-200 transform hover:scale-105 shadow-2xl w-full md:w-auto"
-                >
-                    🚀 START SPILL
-                </button>
-                <button
-                    onClick={() => onStartRush(selectedTable)}
-                    className="bg-orange-500 hover:bg-orange-600 text-white text-xl md:text-2xl font-bold py-3 md:py-4 px-6 md:px-8 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-xl w-full md:w-auto"
-                >
-                    ⏱️ Rush 60s
-                </button>
-            </div>
+            {/* Tabell valg - kun vis hvis spillmodus er valgt */}
+            {gameMode && (
+                <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 mb-8">
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-2xl font-bold text-white">Velg tabell:</h2>
+                        <button
+                            onClick={() => setGameMode(null)}
+                            className="text-white/80 hover:text-white text-sm"
+                        >
+                            ← Tilbake til modus
+                        </button>
+                    </div>
+                    <div className="grid grid-cols-5 gap-3 mb-4">
+                        {[2, 3, 4, 5, 6, 7, 8, 9, 10].map(table => (
+                            <button
+                                key={table}
+                                onClick={() => setSelectedTable(selectedTable === table ? null : table)}
+                                className={`p-3 rounded-xl text-lg font-bold transition-all duration-200 ${
+                                    selectedTable === table 
+                                        ? 'bg-yellow-400 text-black transform scale-105' 
+                                        : 'bg-white/30 text-white hover:bg-white/50'
+                                }`}
+                            >
+                                {table}
+                            </button>
+                        ))}
+                    </div>
+                    <button
+                        onClick={() => setSelectedTable(null)}
+                        className={`p-3 rounded-xl text-lg font-bold transition-all duration-200 ${
+                            selectedTable === null 
+                                ? 'bg-yellow-400 text-black transform scale-105' 
+                                : 'bg-white/30 text-white hover:bg-white/50'
+                        }`}
+                    >
+                        🎲 Blandet
+                    </button>
+                </div>
+            )}
+
+            {/* Start knapper - kun vis hvis spillmodus og tabell er valgt */}
+            {gameMode && (
+                <div className="flex flex-col md:flex-row items-center justify-center gap-4 mb-8">
+                    <button
+                        onClick={handleStart}
+                        className="bg-green-500 hover:bg-green-600 text-white text-2xl md:text-3xl font-bold py-4 md:py-6 px-8 md:px-12 rounded-2xl transition-all duration-200 transform hover:scale-105 shadow-2xl w-full md:w-auto"
+                    >
+                        🚀 START {gameMode === 'classic' ? 'KLASSISK' : 'ADVENTURE'}
+                    </button>
+                    {gameMode === 'adventure' && (
+                        <button
+                            onClick={() => onStartRush(selectedTable)}
+                            className="bg-orange-500 hover:bg-orange-600 text-white text-xl md:text-2xl font-bold py-3 md:py-4 px-6 md:px-8 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-xl w-full md:w-auto"
+                        >
+                            ⏱️ Rush 60s
+                        </button>
+                    )}
+                </div>
+            )}
 
             {/* Kompakt navigasjon */}
             <div className="flex justify-center gap-3">
@@ -1024,7 +1071,7 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
 
 
 // Spill komponent
-const Game = ({ selectedTable, onBackToMenu, onScoreUpdate, onGameOver, mode = 'normal', playSfx, triggerConfetti, powerUps }) => {
+const Game = ({ selectedTable, onBackToMenu, onScoreUpdate, onGameOver, mode = 'normal', playSfx, triggerConfetti, powerUps, usePowerUp }) => {
     const [currentQuestion, setCurrentQuestion] = useState(null);
     const [answers, setAnswers] = useState([]);
     const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -1125,9 +1172,63 @@ const Game = ({ selectedTable, onBackToMenu, onScoreUpdate, onGameOver, mode = '
                 </div>
             </div>
 
+            {/* Power-ups - kun i adventure mode */}
+            {mode === 'adventure' && powerUps && (
+                <div className="mb-6 bg-white/20 backdrop-blur-sm rounded-2xl p-4">
+                    <h3 className="text-lg font-bold text-white mb-3">⚡ Power-ups</h3>
+                    <div className="flex gap-3 flex-wrap">
+                        <button
+                            onClick={() => usePowerUp('double')}
+                            disabled={powerUps.double.active || powerUps.double.uses <= 0}
+                            className={`px-3 py-2 rounded-xl text-sm font-bold transition-all duration-200 ${
+                                powerUps.double.active 
+                                    ? 'bg-green-500 text-white' 
+                                    : powerUps.double.uses > 0 
+                                        ? 'bg-blue-500 text-white hover:bg-blue-600' 
+                                        : 'bg-gray-500 text-white/50'
+                            }`}
+                        >
+                            💎 2x Poeng {powerUps.double.active ? '(Aktiv)' : `(${powerUps.double.uses})`}
+                        </button>
+                        <button
+                            onClick={() => usePowerUp('hint')}
+                            disabled={powerUps.hint.uses <= 0}
+                            className={`px-3 py-2 rounded-xl text-sm font-bold transition-all duration-200 ${
+                                powerUps.hint.uses > 0 
+                                    ? 'bg-yellow-500 text-white hover:bg-yellow-600' 
+                                    : 'bg-gray-500 text-white/50'
+                            }`}
+                        >
+                            💡 Hint ({powerUps.hint.uses})
+                        </button>
+                        <button
+                            onClick={() => usePowerUp('time')}
+                            disabled={powerUps.time.uses <= 0}
+                            className={`px-3 py-2 rounded-xl text-sm font-bold transition-all duration-200 ${
+                                powerUps.time.uses > 0 
+                                    ? 'bg-purple-500 text-white hover:bg-purple-600' 
+                                    : 'bg-gray-500 text-white/50'
+                            }`}
+                        >
+                            ⏰ Ekstra Tid ({powerUps.time.uses})
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Klassisk modus info */}
+            {mode === 'normal' && (
+                <div className="mb-6 bg-white/20 backdrop-blur-sm rounded-2xl p-4">
+                    <h3 className="text-lg font-bold text-white mb-2">📚 Klassisk Modus</h3>
+                    <p className="text-white/80 text-sm">
+                        Fokus på læring og repetisjon. Ingen power-ups eller Gangemon, bare ren gangetabell-trening.
+                    </p>
+                </div>
+            )}
+
             <div className="bg-white/20 backdrop-blur-sm rounded-3xl p-8 mb-8">
                 <h2 className="text-4xl font-bold text-white mb-8">
-                    {selectedTable ? `${selectedTable}-gangen` : 'Blandet oppgaver'}
+                    {mode === 'adventure' ? '🎮 Adventure Mode' : '📚 Klassisk Modus'} - {selectedTable ? `${selectedTable}-gangen` : 'Blandet oppgaver'}
                 </h2>
                 
                 <div className={`text-6xl font-bold text-white mb-8 transition-all duration-300 ${animation} relative`}>
@@ -1360,9 +1461,9 @@ const App = () => {
         }
     }, []);
 
-    const handleStartGame = (table) => {
+    const handleStartGame = (table, gameMode = 'classic') => {
         setSelectedTable(table);
-        setMode('normal');
+        setMode(gameMode === 'adventure' ? 'adventure' : 'normal');
         setCurrentView('game');
     };
 
@@ -1695,6 +1796,7 @@ const SOUNDS = {
                         playSfx={playSfx}
                         triggerConfetti={triggerConfetti}
                         powerUps={powerUps}
+                        usePowerUp={usePowerUp}
                     />
                 )}
                 
