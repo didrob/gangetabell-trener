@@ -33,6 +33,57 @@ const POWER_UPS = [
     { id: "time", name: "Ekstra Tid", emoji: "⏰", duration: 0, cost: 40 }
 ];
 
+// Gangemon-system
+const GANGEMON = [
+    // 2-gangen
+    { id: "fire-dragon", name: "Fire Dragon", emoji: "🐉", table: 2, rarity: "common", unlockScore: 0, description: "En vennlig ild-drage som elsker 2-gangen" },
+    { id: "flame-sprite", name: "Flame Sprite", emoji: "🔥", table: 2, rarity: "rare", unlockScore: 50, description: "En liten flamme-ånd som danser med tallene" },
+    
+    // 3-gangen
+    { id: "water-turtle", name: "Aqua Turtle", emoji: "🐢", table: 3, rarity: "common", unlockScore: 0, description: "En klok vann-skilpadde som behersker 3-gangen" },
+    { id: "wave-spirit", name: "Wave Spirit", emoji: "🌊", table: 3, rarity: "rare", unlockScore: 75, description: "En mystisk bølge-ånd fra havet" },
+    
+    // 4-gangen
+    { id: "earth-bear", name: "Earth Bear", emoji: "🐻", table: 4, rarity: "common", unlockScore: 0, description: "En sterk jord-bjørn som ruller med 4-gangen" },
+    { id: "mountain-giant", name: "Mountain Giant", emoji: "⛰️", table: 4, rarity: "rare", unlockScore: 100, description: "En mektig fjell-kjempe med stein-hjerte" },
+    
+    // 5-gangen
+    { id: "wind-eagle", name: "Wind Eagle", emoji: "🦅", table: 5, rarity: "common", unlockScore: 0, description: "En stolt vind-ørn som svever over 5-gangen" },
+    { id: "storm-cloud", name: "Storm Cloud", emoji: "⛈️", table: 5, rarity: "rare", unlockScore: 125, description: "En kraftig storm-sky som tordner med tallene" },
+    
+    // 6-gangen
+    { id: "ice-wolf", name: "Ice Wolf", emoji: "🐺", table: 6, rarity: "common", unlockScore: 0, description: "En kald is-ulv som jakter på 6-gangen" },
+    { id: "frost-queen", name: "Frost Queen", emoji: "❄️", table: 6, rarity: "rare", unlockScore: 150, description: "En elegant frost-dronning med is-krone" },
+    
+    // 7-gangen
+    { id: "thunder-tiger", name: "Thunder Tiger", emoji: "🐅", table: 7, rarity: "common", unlockScore: 0, description: "En lynrask torden-tiger som raser gjennom 7-gangen" },
+    { id: "lightning-bolt", name: "Lightning Bolt", emoji: "⚡", table: 7, rarity: "rare", unlockScore: 175, description: "En elektrisk lyn-straal som gnistrer med energi" },
+    
+    // 8-gangen
+    { id: "shadow-panther", name: "Shadow Panther", emoji: "🐆", table: 8, rarity: "common", unlockScore: 0, description: "En mystisk skygge-panter som smyger gjennom 8-gangen" },
+    { id: "night-spirit", name: "Night Spirit", emoji: "🌙", table: 8, rarity: "rare", unlockScore: 200, description: "En magisk natt-ånd som skinner i mørket" },
+    
+    // 9-gangen
+    { id: "golden-lion", name: "Golden Lion", emoji: "🦁", table: 9, rarity: "common", unlockScore: 0, description: "En majestetisk gull-løve som hersker over 9-gangen" },
+    { id: "sun-king", name: "Sun King", emoji: "☀️", table: 9, rarity: "rare", unlockScore: 225, description: "En strålende sol-konge med gull-krone" },
+    
+    // 10-gangen
+    { id: "cosmic-whale", name: "Cosmic Whale", emoji: "🐋", table: 10, rarity: "common", unlockScore: 0, description: "En enorm kosmisk hval som svømmer gjennom 10-gangen" },
+    { id: "star-emperor", name: "Star Emperor", emoji: "⭐", table: 10, rarity: "legendary", unlockScore: 300, description: "Den mektige stjerne-keiseren som behersker alle tall" },
+    
+    // Spesielle monstre
+    { id: "rainbow-unicorn", name: "Rainbow Unicorn", emoji: "🦄", table: "special", rarity: "legendary", unlockScore: 500, description: "En magisk regnbue-enhjørning som kan alt" },
+    { id: "phoenix", name: "Phoenix", emoji: "🔥", table: "special", rarity: "mythical", unlockScore: 1000, description: "Den legendariske føniks som gjenoppstår fra asken" }
+];
+
+// Evolusjonsnivåer
+const EVOLUTION_LEVELS = [
+    { name: "Bronze", emoji: "🥉", minScore: 0, color: "bg-orange-600" },
+    { name: "Silver", emoji: "🥈", minScore: 100, color: "bg-gray-400" },
+    { name: "Gold", emoji: "🥇", minScore: 300, color: "bg-yellow-400" },
+    { name: "Diamond", emoji: "💎", minScore: 600, color: "bg-blue-400" }
+];
+
 // Klistremerker
 const STICKERS = [
     { id: "star", emoji: "⭐", name: "Stjerne", unlockScore: 0 },
@@ -121,6 +172,32 @@ const getAvailableAvatars = (score) => {
 
 const getAvailableStickers = (score) => {
     return STICKERS.filter(sticker => score >= sticker.unlockScore);
+};
+
+// Gangemon-hjelpefunksjoner
+const getAvailableGangemon = (score) => {
+    return GANGEMON.filter(gangemon => score >= gangemon.unlockScore);
+};
+
+const getGangemonByTable = (table) => {
+    return GANGEMON.filter(gangemon => gangemon.table === table);
+};
+
+const getEvolutionLevel = (score) => {
+    for (let i = EVOLUTION_LEVELS.length - 1; i >= 0; i--) {
+        if (score >= EVOLUTION_LEVELS[i].minScore) {
+            return EVOLUTION_LEVELS[i];
+        }
+    }
+    return EVOLUTION_LEVELS[0];
+};
+
+const checkGangemonUnlock = (score, currentGangemon) => {
+    const newGangemon = GANGEMON.filter(gangemon => 
+        score >= gangemon.unlockScore && 
+        !currentGangemon.includes(gangemon.id)
+    );
+    return newGangemon;
 };
 
 const checkTrophies = (stats, newTrophies) => {
@@ -337,6 +414,111 @@ const ConfettiLayer = ({ burst }) => {
     );
 };
 
+// Gangemon Collection komponent
+const GangemonCollection = ({ gangemon, onClose }) => {
+    const availableGangemon = GANGEMON.filter(g => gangemon.includes(g.id));
+    const evolutionLevel = getEvolutionLevel(gangemon.length * 50); // Simuler score basert på antall Gangemon
+    
+    return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-3xl font-bold text-white">🎮 Gangemon Collection</h2>
+                    <button
+                        onClick={onClose}
+                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl font-bold"
+                    >
+                        ✕ Lukk
+                    </button>
+                </div>
+                
+                {/* Evolusjonsnivå */}
+                <div className="bg-white/20 rounded-xl p-4 mb-6">
+                    <h3 className="text-xl font-bold text-white mb-2">Evolusjonsnivå</h3>
+                    <div className="flex items-center gap-3">
+                        <span className="text-3xl">{evolutionLevel.emoji}</span>
+                        <div>
+                            <p className="text-lg font-bold text-white">{evolutionLevel.name}</p>
+                            <p className="text-sm text-white/80">Samlet {availableGangemon.length} av {GANGEMON.length} Gangemon</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Gangemon grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {GANGEMON.map(g => {
+                        const isOwned = gangemon.includes(g.id);
+                        const rarityColor = {
+                            common: 'bg-gray-500',
+                            rare: 'bg-blue-500',
+                            legendary: 'bg-purple-500',
+                            mythical: 'bg-yellow-500'
+                        }[g.rarity];
+                        
+                        return (
+                            <div
+                                key={g.id}
+                                className={`p-4 rounded-xl transition-all duration-200 ${
+                                    isOwned 
+                                        ? 'bg-white/30 hover:bg-white/40' 
+                                        : 'bg-white/10 opacity-50'
+                                }`}
+                            >
+                                <div className="text-center">
+                                    <div className="text-4xl mb-2">{isOwned ? g.emoji : '❓'}</div>
+                                    <h4 className="font-bold text-white text-sm mb-1">
+                                        {isOwned ? g.name : '???'}
+                                    </h4>
+                                    <div className={`inline-block px-2 py-1 rounded-full text-xs font-bold text-white ${rarityColor}`}>
+                                        {isOwned ? g.rarity : '???'}
+                                    </div>
+                                    {isOwned && (
+                                        <p className="text-xs text-white/80 mt-2">{g.description}</p>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// Ny Gangemon Unlock komponent
+const NewGangemonUnlock = ({ newGangemon, onClose }) => {
+    if (!newGangemon || newGangemon.length === 0) return null;
+    
+    return (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
+            <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl p-8 max-w-md w-full text-center">
+                <h2 className="text-3xl font-bold text-white mb-4">🎉 Ny Gangemon!</h2>
+                {newGangemon.map(gangemon => (
+                    <div key={gangemon.id} className="mb-4">
+                        <div className="text-6xl mb-2 animate-bounce">{gangemon.emoji}</div>
+                        <h3 className="text-2xl font-bold text-white mb-2">{gangemon.name}</h3>
+                        <p className="text-white/90 mb-2">{gangemon.description}</p>
+                        <div className={`inline-block px-3 py-1 rounded-full text-sm font-bold text-white ${
+                            gangemon.rarity === 'common' ? 'bg-gray-500' :
+                            gangemon.rarity === 'rare' ? 'bg-blue-500' :
+                            gangemon.rarity === 'legendary' ? 'bg-purple-500' :
+                            'bg-yellow-500'
+                        }`}>
+                            {gangemon.rarity.toUpperCase()}
+                        </div>
+                    </div>
+                ))}
+                <button
+                    onClick={onClose}
+                    className="bg-white text-purple-600 px-6 py-3 rounded-xl font-bold text-lg hover:bg-gray-100 transition-colors"
+                >
+                    Fantastisk! 🚀
+                </button>
+            </div>
+        </div>
+    );
+};
+
 // Brukervalg komponent
 const UserSelect = ({ onUserSelect, onNewUser }) => {
     const [users, setUsers] = useState([]);
@@ -468,7 +650,7 @@ const UserSelect = ({ onUserSelect, onNewUser }) => {
 };
 
 // FORENKLET StartMenu komponent
-const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, setIsMuted, currentAvatar, setCurrentAvatar, currentTheme, setCurrentTheme, powerUps, usePowerUp, dailyChallenge, soundVolume, setSoundVolume, soundType, setSoundType, soundFrequency, setSoundFrequency, playSfx, currentUser, onSwitchUser, onShowStats, onDeleteCurrentUser }) => {
+const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, setIsMuted, currentAvatar, setCurrentAvatar, currentTheme, setCurrentTheme, powerUps, usePowerUp, dailyChallenge, soundVolume, setSoundVolume, soundType, setSoundType, soundFrequency, setSoundFrequency, playSfx, currentUser, onSwitchUser, onShowStats, onDeleteCurrentUser, gangemon, onShowGangemon }) => {
     const [selectedTable, setSelectedTable] = useState(null);
     const [showSettings, setShowSettings] = useState(false);
     const [showAvatarSelect, setShowAvatarSelect] = useState(false);
@@ -492,11 +674,14 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
             {/* Brukerinfo - kompakt */}
             <div className="flex items-center justify-center gap-4 mb-8">
                 <div className="flex items-center gap-3">
-                    <span className="text-3xl">{currentAvatar.emoji}</span>
+                    <span className="text-3xl animate-float">{currentAvatar.emoji}</span>
                     <div className="text-left">
                         <p className="text-lg text-white font-bold">{currentUser || 'Bruker'}</p>
                         <p className="text-base text-white">
                             {currentLevel.emoji} {currentLevel.name} · <span className="font-bold">{score}</span> poeng
+                        </p>
+                        <p className="text-sm text-white/80">
+                            🎮 {gangemon.length} Gangemon samlet
                         </p>
                     </div>
                 </div>
@@ -636,6 +821,13 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                 >
                     📊
                 </button>
+                <button
+                    onClick={onShowGangemon}
+                    className="p-3 rounded-xl text-white font-bold transition-all duration-200 bg-purple-500 hover:bg-purple-600"
+                    title="Gangemon Collection"
+                >
+                    🎮
+                </button>
             </div>
 
             {/* Kollapsible seksjoner */}
@@ -672,6 +864,12 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                     className="p-2 rounded-lg text-white font-bold transition-all duration-200 bg-indigo-500 hover:bg-indigo-600"
                 >
                     📊 Statistikk
+                </button>
+                <button
+                    onClick={onShowGangemon}
+                    className="p-2 rounded-lg text-white font-bold transition-all duration-200 bg-purple-500 hover:bg-purple-600"
+                >
+                    🎮 Gangemon
                 </button>
             </div>
                 </div>
@@ -832,6 +1030,7 @@ const Game = ({ selectedTable, onBackToMenu, onScoreUpdate, onGameOver, mode = '
     const [selectedAnswer, setSelectedAnswer] = useState(null);
     const [feedback, setFeedback] = useState('');
     const [animation, setAnimation] = useState('');
+    const [showCorrectAnimation, setShowCorrectAnimation] = useState(false);
     const [streak, setStreak] = useState(0);
     const [timeLeft, setTimeLeft] = useState(60);
     const intervalRef = useRef(null);
@@ -879,7 +1078,8 @@ const Game = ({ selectedTable, onBackToMenu, onScoreUpdate, onGameOver, mode = '
         if (answer === currentQuestion.answer) {
             const answerTime = Date.now() - startTime;
             setFeedback('🎉 Riktig! Fantastisk jobb!');
-            setAnimation('bounce-animation');
+            setAnimation('animate-bounce-in');
+            setShowCorrectAnimation(true);
             const newStreak = streak + 1;
             setStreak(newStreak);
             onScoreUpdate(10 + (newStreak * 2), true, answerTime);
@@ -888,16 +1088,19 @@ const Game = ({ selectedTable, onBackToMenu, onScoreUpdate, onGameOver, mode = '
             setCorrectCount(c => c + 1);
             
             setTimeout(() => {
+                setShowCorrectAnimation(false);
+                setAnimation('');
                 generateNewQuestion();
             }, 1500);
         } else {
             setFeedback(`❌ Feil svar. Riktig svar er ${currentQuestion.answer}. Prøv igjen!`);
-            setAnimation('shake-animation');
+            setAnimation('animate-shake');
             setStreak(0);
             playSfx('wrong');
             onScoreUpdate(0, false);
             
             setTimeout(() => {
+                setAnimation('');
                 generateNewQuestion();
             }, 2000);
         }
@@ -927,8 +1130,11 @@ const Game = ({ selectedTable, onBackToMenu, onScoreUpdate, onGameOver, mode = '
                     {selectedTable ? `${selectedTable}-gangen` : 'Blandet oppgaver'}
                 </h2>
                 
-                <div className={`text-6xl font-bold text-white mb-8 ${animation}`}>
+                <div className={`text-6xl font-bold text-white mb-8 transition-all duration-300 ${animation} relative`}>
                     {currentQuestion.question} = ?
+                    {showCorrectAnimation && (
+                        <div className="absolute -top-4 -right-4 text-4xl animate-sparkle">✨</div>
+                    )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-6">
@@ -937,14 +1143,14 @@ const Game = ({ selectedTable, onBackToMenu, onScoreUpdate, onGameOver, mode = '
                             key={index}
                             onClick={() => handleAnswer(answer)}
                             disabled={selectedAnswer}
-                            className={`p-6 rounded-2xl text-3xl font-bold transition-all duration-200 ${
+                            className={`p-6 rounded-2xl text-3xl font-bold transition-all duration-300 transform ${
                                 selectedAnswer === answer
                                     ? answer === currentQuestion.answer
-                                        ? 'bg-green-500 text-white transform scale-105'
-                                        : 'bg-red-500 text-white transform scale-105'
+                                        ? 'bg-green-500 text-white scale-110 shadow-2xl animate-pulse'
+                                        : 'bg-red-500 text-white scale-95 animate-shake'
                                     : selectedAnswer && answer === currentQuestion.answer
-                                        ? 'bg-green-500 text-white transform scale-105'
-                                        : 'bg-white/30 text-white hover:bg-white/50 hover:scale-105'
+                                        ? 'bg-green-500 text-white scale-110 shadow-2xl animate-pulse'
+                                        : 'bg-white/30 text-white hover:bg-white/50 hover:scale-105 hover:shadow-lg'
                             }`}
                         >
                             {answer}
@@ -975,6 +1181,9 @@ const App = () => {
     const [badges, setBadges] = useState([]);
     const [streakForBadge, setStreakForBadge] = useState(0);
     const [lastRushSummary, setLastRushSummary] = useState(null);
+    const [gangemon, setGangemon] = useState([]);
+    const [newGangemonUnlocked, setNewGangemonUnlocked] = useState([]);
+    const [showGangemonCollection, setShowGangemonCollection] = useState(false);
     
     // Nye state for alle funksjoner
     const [currentAvatar, setCurrentAvatar] = useState(AVATARS[0]);
@@ -1034,6 +1243,7 @@ const App = () => {
             }
         });
         setBadges(data.badges || []);
+        setGangemon(data.gangemon || []);
         setDailyChallenge(getDailyChallenge());
         setCurrentView('menu');
     };
@@ -1048,7 +1258,8 @@ const App = () => {
                 isMuted,
                 powerUps,
                 stats,
-                badges
+                badges,
+                gangemon
             };
             saveUserData(currentUser, updatedData);
             setUserData(updatedData);
@@ -1073,6 +1284,7 @@ const App = () => {
                 soundFrequency: localStorage.getItem('gangetabell-sound-frequency') || 'normal',
                 powerUps: { double: { active: false, endTime: 0 }, hint: { uses: 0 }, time: { uses: 0 } },
                 badges: [],
+                gangemon: [],
                 stats: {
                     totalCorrect: 0,
                     maxStreak: 0,
@@ -1115,7 +1327,7 @@ const App = () => {
         if (currentUser) {
             saveCurrentUserData();
         }
-    }, [score, currentAvatar, currentTheme, isMuted, powerUps, stats, badges]);
+    }, [score, currentAvatar, currentTheme, isMuted, powerUps, stats, badges, gangemon]);
     const [trophies, setTrophies] = useState(() => {
         try { return JSON.parse(localStorage.getItem('gangetabell-trophies') || '[]'); } catch { return []; }
     });
@@ -1246,6 +1458,17 @@ const App = () => {
             playSfx('badge');
             setConfettiBurst(true);
             setTimeout(() => setConfettiBurst(false), 1200);
+        }
+
+        // Sjekk nye Gangemon
+        const newGangemon = checkGangemonUnlock(newScore, gangemon);
+        if (newGangemon.length > 0) {
+            const updatedGangemon = [...gangemon, ...newGangemon.map(g => g.id)];
+            setGangemon(updatedGangemon);
+            setNewGangemonUnlocked(newGangemon);
+            playSfx('badge');
+            setConfettiBurst(true);
+            setTimeout(() => setConfettiBurst(false), 2000);
         }
 
         // Oppdater daglig utfordring
@@ -1386,6 +1609,18 @@ const SOUNDS = {
         setCurrentView('userSelect');
     };
 
+    const handleShowGangemon = () => {
+        setShowGangemonCollection(true);
+    };
+
+    const handleCloseGangemon = () => {
+        setShowGangemonCollection(false);
+    };
+
+    const handleCloseNewGangemon = () => {
+        setNewGangemonUnlocked([]);
+    };
+
     return (
         <div className={`min-h-screen flex items-center justify-center ${currentTheme.class}`}>
             <div className="w-full max-w-4xl">
@@ -1429,6 +1664,8 @@ const SOUNDS = {
                         onSwitchUser={() => setCurrentView('userSelect')}
                         onShowStats={() => setCurrentView('stats')}
                         onDeleteCurrentUser={handleDeleteCurrentUser}
+                        gangemon={gangemon}
+                        onShowGangemon={handleShowGangemon}
                     />
                 ) : currentView === 'stats' ? (
                     <StatsOverview 
@@ -1478,6 +1715,20 @@ const SOUNDS = {
                         </div>
                     </div>
                 )}
+
+                {/* Gangemon Collection Modal */}
+                {showGangemonCollection && (
+                    <GangemonCollection 
+                        gangemon={gangemon}
+                        onClose={handleCloseGangemon}
+                    />
+                )}
+
+                {/* New Gangemon Unlock Modal */}
+                <NewGangemonUnlock 
+                    newGangemon={newGangemonUnlocked}
+                    onClose={handleCloseNewGangemon}
+                />
             </div>
         </div>
     );
@@ -1542,6 +1793,66 @@ if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js').catch(() => {});
     });
 }
+
+// Legg til CSS-animasjoner
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+    
+    @keyframes bounce-in {
+        0% { transform: scale(0.3); opacity: 0; }
+        50% { transform: scale(1.05); }
+        70% { transform: scale(0.9); }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    @keyframes sparkle {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.5; transform: scale(1.2); }
+    }
+    
+    .animate-shake {
+        animation: shake 0.5s ease-in-out;
+    }
+    
+    .animate-bounce-in {
+        animation: bounce-in 0.6s ease-out;
+    }
+    
+    .animate-float {
+        animation: float 2s ease-in-out infinite;
+    }
+    
+    .animate-sparkle {
+        animation: sparkle 1s ease-in-out infinite;
+    }
+    
+    .confetti-piece {
+        position: absolute;
+        animation: confetti-fall 3s linear infinite;
+    }
+    
+    @keyframes confetti-fall {
+        0% {
+            transform: translateY(-100vh) rotate(0deg);
+            opacity: 1;
+        }
+        100% {
+            transform: translateY(100vh) rotate(720deg);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
 
 // Render appen
 const root = ReactDOM.createRoot(document.getElementById('root'));
