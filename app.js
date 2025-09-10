@@ -468,7 +468,7 @@ const UserSelect = ({ onUserSelect, onNewUser }) => {
 };
 
 // FORENKLET StartMenu komponent
-const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, setIsMuted, currentAvatar, setCurrentAvatar, currentTheme, setCurrentTheme, powerUps, usePowerUp, dailyChallenge, soundVolume, setSoundVolume, soundType, setSoundType, soundFrequency, setSoundFrequency, playSfx, currentUser, onSwitchUser, onShowStats }) => {
+const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, setIsMuted, currentAvatar, setCurrentAvatar, currentTheme, setCurrentTheme, powerUps, usePowerUp, dailyChallenge, soundVolume, setSoundVolume, soundType, setSoundType, soundFrequency, setSoundFrequency, playSfx, currentUser, onSwitchUser, onShowStats, onDeleteCurrentUser }) => {
     const [selectedTable, setSelectedTable] = useState(null);
     const [showSettings, setShowSettings] = useState(false);
     const [showAvatarSelect, setShowAvatarSelect] = useState(false);
@@ -522,6 +522,16 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                     >
                         👤
                 </button>
+                    {currentUser && (
+                        <button
+                            onClick={onDeleteCurrentUser}
+                            className="px-3 py-2 rounded-lg text-white font-bold transition-all duration-200 bg-red-600 hover:bg-red-700"
+                            aria-label="Slett nåværende bruker"
+                            title="Slett nåværende bruker"
+                        >
+                            🗑️
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -1365,6 +1375,17 @@ const SOUNDS = {
         setCurrentView('menu');
     };
 
+    const handleDeleteCurrentUser = () => {
+        if (!currentUser) return;
+        if (!confirm(`Slette bruker "${currentUser}"? Dette kan ikke angres.`)) return;
+        deleteUserData(currentUser);
+        localStorage.removeItem('gangetabell-current-user');
+        setCurrentUserState(null);
+        setUserData(null);
+        setScore(0);
+        setCurrentView('userSelect');
+    };
+
     return (
         <div className={`min-h-screen flex items-center justify-center ${currentTheme.class}`}>
             <div className="w-full max-w-4xl">
@@ -1407,6 +1428,7 @@ const SOUNDS = {
                         currentUser={currentUser}
                         onSwitchUser={() => setCurrentView('userSelect')}
                         onShowStats={() => setCurrentView('stats')}
+                        onDeleteCurrentUser={handleDeleteCurrentUser}
                     />
                 ) : currentView === 'stats' ? (
                     <StatsOverview 
