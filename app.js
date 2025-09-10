@@ -581,34 +581,34 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                                 </div>
                             </div>
 
-                    {/* Lydtype */}
+                    {/* Lydfrekvens */}
                     <div className="mb-4">
-                        <h4 className="text-base font-bold text-white mb-2">Lydtype:</h4>
+                        <h4 className="text-base font-bold text-white mb-2">Lydfrekvens:</h4>
                         <div className="grid grid-cols-3 gap-2">
                             <button
-                                onClick={() => setSoundType('soft')}
+                                onClick={() => setSoundFrequency('normal')}
                                 className={`p-2 rounded-lg text-white font-bold transition-all duration-200 ${
-                                    soundType === 'soft' 
+                                    soundFrequency === 'normal' 
                                         ? 'bg-green-400 text-black' 
                                         : 'bg-white/30 hover:bg-white/50'
                                 }`}
                             >
-                                <div className="text-sm">🔔 Myk</div>
+                                <div className="text-sm">🔊 Normal</div>
                             </button>
                             <button
-                                onClick={() => setSoundType('classic')}
+                                onClick={() => setSoundFrequency('reduced')}
                                 className={`p-2 rounded-lg text-white font-bold transition-all duration-200 ${
-                                    soundType === 'classic' 
+                                    soundFrequency === 'reduced' 
                                         ? 'bg-green-400 text-black' 
                                         : 'bg-white/30 hover:bg-white/50'
                                 }`}
                             >
-                                <div className="text-sm">🎵 Klassisk</div>
+                                <div className="text-sm">🔉 Redusert</div>
                             </button>
                             <button
-                                onClick={() => setSoundType('minimal')}
+                                onClick={() => setSoundFrequency('minimal')}
                                 className={`p-2 rounded-lg text-white font-bold transition-all duration-200 ${
-                                    soundType === 'minimal' 
+                                    soundFrequency === 'minimal' 
                                         ? 'bg-green-400 text-black' 
                                         : 'bg-white/30 hover:bg-white/50'
                                 }`}
@@ -1024,26 +1024,42 @@ const [soundFrequency, setSoundFrequency] = useState(() => {
     return saved || 'normal'; // normal, reduced, minimal
 });
 
-    const correctAudio = useRef(null);
-    const wrongAudio = useRef(null);
-    const badgeAudio = useRef(null);
+    // Audio refs fjernet - bruker Web Audio API i stedet
 
-// Mykere lydalternativer
-const SOUND_URLS = {
-    soft: {
-        correct: "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBS13yO/eizEIHWq+8+OWT",
-        wrong: "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBS13yO/eizEIHWq+8+OWT",
-        badge: "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBS13yO/eizEIHWq+8+OWT"
+// Forbedret lydsystem med Web Audio API
+const createTone = (frequency, duration, type = 'sine') => {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+    oscillator.type = type;
+    
+    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.01);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + duration);
+};
+
+const SOUNDS = {
+    correct: () => {
+        createTone(523, 0.2); // C5
+        setTimeout(() => createTone(659, 0.2), 100); // E5
+        setTimeout(() => createTone(784, 0.3), 200); // G5
     },
-    classic: {
-        correct: "https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3",
-        wrong: "https://assets.mixkit.co/active_storage/sfx/2569/2569-preview.mp3", 
-        badge: "https://assets.mixkit.co/active_storage/sfx/2011/2011-preview.mp3"
+    wrong: () => {
+        createTone(200, 0.5, 'sawtooth'); // Lav tone
     },
-    minimal: {
-        correct: "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBS13yO/eizEIHWq+8+OWT",
-        wrong: "",
-        badge: "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBS13yO/eizEIHWq+8+OWT"
+    badge: () => {
+        createTone(523, 0.1); // C5
+        setTimeout(() => createTone(659, 0.1), 50); // E5
+        setTimeout(() => createTone(784, 0.1), 100); // G5
+        setTimeout(() => createTone(1047, 0.2), 150); // C6
     }
 };
 
@@ -1055,21 +1071,41 @@ const SOUND_URLS = {
 }, [isMuted, soundVolume, soundType, soundFrequency]);
 
     const playSfx = (type) => {
-    if (isMuted || soundVolume === 0) return;
-    
-    // Smart lyd - reduser frekvens basert på innstilling
-    if (soundFrequency === 'reduced' && type === 'correct' && Math.random() > 0.5) return;
-    if (soundFrequency === 'minimal' && type !== 'badge') return;
-    
-    const soundUrl = SOUND_URLS[soundType][type];
-    if (!soundUrl) return;
-    
-    try {
-        const audio = new Audio(soundUrl);
-        audio.volume = soundVolume;
-        audio.play().catch(() => {});
-    } catch (error) {
-        console.warn('Could not play sound:', error);
+        if (isMuted || soundVolume === 0) return;
+        
+        // Smart lyd - reduser frekvens basert på innstilling
+        if (soundFrequency === 'reduced' && type === 'correct' && Math.random() > 0.5) return;
+        if (soundFrequency === 'minimal' && type !== 'badge') return;
+        
+        try {
+            // Bruk Web Audio API for bedre kompatibilitet
+            if (SOUNDS[type]) {
+                SOUNDS[type]();
+            }
+        } catch (error) {
+            console.warn('Could not play sound:', error);
+            // Fallback til enkel beep
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                const frequency = type === 'correct' ? 800 : type === 'wrong' ? 200 : 600;
+                oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                gainNode.gain.linearRampToValueAtTime(soundVolume * 0.1, audioContext.currentTime + 0.01);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.2);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.2);
+            } catch (fallbackError) {
+                console.warn('Fallback sound also failed:', fallbackError);
+            }
         }
     };
 
@@ -1092,9 +1128,7 @@ const SOUND_URLS = {
     return (
         <div className={`min-h-screen flex items-center justify-center ${currentTheme.class}`}>
             <div className="w-full max-w-4xl">
-                <audio ref={correctAudio} src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3" preload="auto" />
-                <audio ref={wrongAudio} src="https://assets.mixkit.co/active_storage/sfx/2569/2569-preview.mp3" preload="auto" />
-                <audio ref={badgeAudio} src="https://assets.mixkit.co/active_storage/sfx/2011/2011-preview.mp3" preload="auto" />
+                {/* Audio elementer fjernet - bruker Web Audio API */}
                 <ConfettiLayer burst={confettiBurst} />
                 
                 {/* Power-up indikator */}
