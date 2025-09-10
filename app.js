@@ -742,6 +742,12 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
         onStartGame(selectedTable, gameMode);
     };
 
+    // Reset gameMode when component mounts (when returning from game)
+    useEffect(() => {
+        setGameMode(null);
+        setSelectedTable(null);
+    }, []);
+
     const availableAvatars = getAvailableAvatars(score);
 
     return (
