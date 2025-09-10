@@ -519,6 +519,85 @@ const NewGangemonUnlock = ({ newGangemon, onClose }) => {
     );
 };
 
+// Badge Collection komponent
+const BadgeCollection = ({ badges, onClose }) => {
+    const allBadges = [
+        { id: '5-paa-rad', name: '5 på rad', emoji: '🔥', description: 'Få 5 riktige svar på rad', color: 'bg-green-500' },
+        { id: '10-paa-rad', name: '10 på rad', emoji: '⚡', description: 'Få 10 riktige svar på rad', color: 'bg-blue-500' },
+        { id: '20-paa-rad', name: '20 på rad', emoji: '🌟', description: 'Få 20 riktige svar på rad', color: 'bg-purple-500' },
+        { id: '100-poeng', name: '100 poeng', emoji: '💯', description: 'Oppnå 100 poeng totalt', color: 'bg-yellow-500' },
+        { id: '500-poeng', name: '500 poeng', emoji: '🏆', description: 'Oppnå 500 poeng totalt', color: 'bg-orange-500' },
+        { id: '1000-poeng', name: '1000 poeng', emoji: '👑', description: 'Oppnå 1000 poeng totalt', color: 'bg-red-500' },
+        { id: 'speed-demon', name: 'Speed Demon', emoji: '⚡', description: 'Svar riktig på under 2 sekunder', color: 'bg-indigo-500' },
+        { id: 'perfectionist', name: 'Perfeksjonist', emoji: '💎', description: 'Få 100% riktig i en runde', color: 'bg-pink-500' },
+        { id: 'daily-warrior', name: 'Daglig Kriger', emoji: '🗡️', description: 'Fullfør daglig utfordring', color: 'bg-teal-500' },
+        { id: 'gangemon-master', name: 'Gangemon Mester', emoji: '🎮', description: 'Samle alle Gangemon', color: 'bg-cyan-500' }
+    ];
+    
+    return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-3xl font-bold text-white">🏅 Badge Collection</h2>
+                    <button
+                        onClick={onClose}
+                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl font-bold"
+                    >
+                        ✕ Lukk
+                    </button>
+                </div>
+                
+                {/* Badge grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {allBadges.map(badge => {
+                        const isEarned = badges.includes(badge.id);
+                        
+                        return (
+                            <div
+                                key={badge.id}
+                                className={`p-4 rounded-xl transition-all duration-200 ${
+                                    isEarned 
+                                        ? 'bg-white/30 hover:bg-white/40' 
+                                        : 'bg-white/10 opacity-50'
+                                }`}
+                            >
+                                <div className="text-center">
+                                    <div className="text-4xl mb-2">{isEarned ? badge.emoji : '🔒'}</div>
+                                    <h4 className="font-bold text-white text-sm mb-1">
+                                        {isEarned ? badge.name : '???'}
+                                    </h4>
+                                    <div className={`inline-block px-2 py-1 rounded-full text-xs font-bold text-white ${badge.color}`}>
+                                        {isEarned ? 'OPPNÅDD' : 'LÅST'}
+                                    </div>
+                                    {isEarned && (
+                                        <p className="text-xs text-white/80 mt-2">{badge.description}</p>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+                
+                {/* Progress summary */}
+                <div className="mt-6 bg-white/20 rounded-xl p-4">
+                    <h3 className="text-xl font-bold text-white mb-2">Fremgang</h3>
+                    <div className="flex items-center gap-3">
+                        <div className="flex-1 bg-white/20 rounded-full h-4">
+                            <div 
+                                className="bg-gradient-to-r from-green-400 to-blue-500 h-4 rounded-full transition-all duration-500"
+                                style={{ width: `${(badges.length / allBadges.length) * 100}%` }}
+                            ></div>
+                        </div>
+                        <span className="text-white font-bold">
+                            {badges.length} / {allBadges.length}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 // Brukervalg komponent
 const UserSelect = ({ onUserSelect, onNewUser }) => {
     const [users, setUsers] = useState([]);
@@ -650,7 +729,7 @@ const UserSelect = ({ onUserSelect, onNewUser }) => {
 };
 
 // FORENKLET StartMenu komponent
-const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, setIsMuted, currentAvatar, setCurrentAvatar, currentTheme, setCurrentTheme, powerUps, usePowerUp, dailyChallenge, soundVolume, setSoundVolume, soundType, setSoundType, soundFrequency, setSoundFrequency, playSfx, currentUser, onSwitchUser, onShowStats, onDeleteCurrentUser, gangemon, onShowGangemon }) => {
+const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, setIsMuted, currentAvatar, setCurrentAvatar, currentTheme, setCurrentTheme, powerUps, usePowerUp, dailyChallenge, soundVolume, setSoundVolume, soundType, setSoundType, soundFrequency, setSoundFrequency, playSfx, currentUser, onSwitchUser, onShowStats, onDeleteCurrentUser, gangemon, onShowGangemon, badges, onShowBadges }) => {
     const [gameMode, setGameMode] = useState(null); // 'classic' or 'adventure'
     const [selectedTable, setSelectedTable] = useState(null);
     const [showSettings, setShowSettings] = useState(false);
@@ -875,6 +954,13 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                 >
                     🎮
                 </button>
+                <button
+                    onClick={onShowBadges}
+                    className="p-3 rounded-xl text-white font-bold transition-all duration-200 bg-yellow-500 hover:bg-yellow-600"
+                    title="Badge Collection"
+                >
+                    🏅
+                </button>
             </div>
 
             {/* Kollapsible seksjoner */}
@@ -917,6 +1003,12 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                     className="p-2 rounded-lg text-white font-bold transition-all duration-200 bg-purple-500 hover:bg-purple-600"
                 >
                     🎮 Gangemon
+                </button>
+                <button
+                    onClick={onShowBadges}
+                    className="p-2 rounded-lg text-white font-bold transition-all duration-200 bg-yellow-500 hover:bg-yellow-600"
+                >
+                    🏅 Badges
                 </button>
             </div>
                 </div>
@@ -1129,7 +1221,7 @@ const Game = ({ selectedTable, onBackToMenu, onScoreUpdate, onGameOver, mode = '
             setShowCorrectAnimation(true);
             const newStreak = streak + 1;
             setStreak(newStreak);
-            onScoreUpdate(10 + (newStreak * 2), true, answerTime);
+            onScoreUpdate(10 + (newStreak * 2), true, answerTime, newStreak);
             playSfx('correct');
             triggerConfetti();
             setCorrectCount(c => c + 1);
@@ -1285,6 +1377,7 @@ const App = () => {
     const [gangemon, setGangemon] = useState([]);
     const [newGangemonUnlocked, setNewGangemonUnlocked] = useState([]);
     const [showGangemonCollection, setShowGangemonCollection] = useState(false);
+    const [showBadgeCollection, setShowBadgeCollection] = useState(false);
     
     // Nye state for alle funksjoner
     const [currentAvatar, setCurrentAvatar] = useState(AVATARS[0]);
@@ -1501,7 +1594,7 @@ const App = () => {
         }
     };
 
-    const handleScoreUpdate = (points, isCorrect, answerTime) => {
+    const handleScoreUpdate = (points, isCorrect, answerTime, currentStreak = 0) => {
         let finalPoints = points;
         
         // 2x poeng power-up
@@ -1542,8 +1635,21 @@ const App = () => {
         });
 
         // Sjekk badges
-        if (newScore >= 100 && !badges.includes('100-poeng')) {
-            const updated = [...badges, '100-poeng'];
+        const newBadges = [];
+        if (newScore >= 100 && !badges.includes('100-poeng')) newBadges.push('100-poeng');
+        if (newScore >= 500 && !badges.includes('500-poeng')) newBadges.push('500-poeng');
+        if (newScore >= 1000 && !badges.includes('1000-poeng')) newBadges.push('1000-poeng');
+        
+        // Sjekk streak badges
+        if (currentStreak >= 5 && !badges.includes('5-paa-rad')) newBadges.push('5-paa-rad');
+        if (currentStreak >= 10 && !badges.includes('10-paa-rad')) newBadges.push('10-paa-rad');
+        if (currentStreak >= 20 && !badges.includes('20-paa-rad')) newBadges.push('20-paa-rad');
+        
+        // Sjekk speed badge
+        if (answerTime && answerTime < 2000 && !badges.includes('speed-demon')) newBadges.push('speed-demon');
+        
+        if (newBadges.length > 0) {
+            const updated = [...badges, ...newBadges];
             setBadges(updated);
             localStorage.setItem('gangetabell-badges', JSON.stringify(updated));
             playSfx('badge');
@@ -1722,6 +1828,14 @@ const SOUNDS = {
         setNewGangemonUnlocked([]);
     };
 
+    const handleShowBadges = () => {
+        setShowBadgeCollection(true);
+    };
+
+    const handleCloseBadges = () => {
+        setShowBadgeCollection(false);
+    };
+
     return (
         <div className={`min-h-screen flex items-center justify-center ${currentTheme.class}`}>
             <div className="w-full max-w-4xl">
@@ -1767,6 +1881,8 @@ const SOUNDS = {
                         onDeleteCurrentUser={handleDeleteCurrentUser}
                         gangemon={gangemon}
                         onShowGangemon={handleShowGangemon}
+                        badges={badges}
+                        onShowBadges={handleShowBadges}
                     />
                 ) : currentView === 'stats' ? (
                     <StatsOverview 
@@ -1777,7 +1893,7 @@ const SOUNDS = {
                     <Game 
                         selectedTable={selectedTable}
                         onBackToMenu={handleBackToMenu}
-                        onScoreUpdate={(points, isCorrect, answerTime) => {
+                        onScoreUpdate={(points, isCorrect, answerTime, currentStreak) => {
                             setStreakForBadge(prev => {
                                 const next = points > 0 ? prev + 1 : 0;
                                 if (next >= 5 && !badges.includes('5-paa-rad')) {
@@ -1789,7 +1905,7 @@ const SOUNDS = {
                                 }
                                 return next;
                             });
-                            handleScoreUpdate(points, isCorrect, answerTime);
+                            handleScoreUpdate(points, isCorrect, answerTime, currentStreak);
                         }}
                         onGameOver={handleGameOver}
                         mode={mode}
@@ -1810,10 +1926,18 @@ const SOUNDS = {
                 
                 {badges.length > 0 && currentView === 'menu' && (
                     <div className="mt-6 bg-white/20 backdrop-blur-sm rounded-2xl p-4 text-white">
-                        <div className="font-bold mb-2">🏅 Dine merker:</div>
-                        <div className="flex gap-3 flex-wrap">
-                            {badges.includes('5-paa-rad') && <span className="px-3 py-1 rounded-xl bg-green-500 text-white">5 på rad</span>}
-                            {badges.includes('100-poeng') && <span className="px-3 py-1 rounded-xl bg-yellow-500 text-black">100 poeng</span>}
+                        <div className="font-bold mb-2">🏅 Dine merker ({badges.length}):</div>
+                        <div className="flex gap-2 flex-wrap">
+                            {badges.includes('5-paa-rad') && <span className="px-2 py-1 rounded-lg bg-green-500 text-white text-sm">🔥 5 på rad</span>}
+                            {badges.includes('10-paa-rad') && <span className="px-2 py-1 rounded-lg bg-blue-500 text-white text-sm">⚡ 10 på rad</span>}
+                            {badges.includes('20-paa-rad') && <span className="px-2 py-1 rounded-lg bg-purple-500 text-white text-sm">🌟 20 på rad</span>}
+                            {badges.includes('100-poeng') && <span className="px-2 py-1 rounded-lg bg-yellow-500 text-black text-sm">💯 100 poeng</span>}
+                            {badges.includes('500-poeng') && <span className="px-2 py-1 rounded-lg bg-orange-500 text-white text-sm">🏆 500 poeng</span>}
+                            {badges.includes('1000-poeng') && <span className="px-2 py-1 rounded-lg bg-red-500 text-white text-sm">👑 1000 poeng</span>}
+                            {badges.includes('speed-demon') && <span className="px-2 py-1 rounded-lg bg-indigo-500 text-white text-sm">⚡ Speed Demon</span>}
+                            {badges.includes('perfectionist') && <span className="px-2 py-1 rounded-lg bg-pink-500 text-white text-sm">💎 Perfeksjonist</span>}
+                            {badges.includes('daily-warrior') && <span className="px-2 py-1 rounded-lg bg-teal-500 text-white text-sm">🗡️ Daglig Kriger</span>}
+                            {badges.includes('gangemon-master') && <span className="px-2 py-1 rounded-lg bg-cyan-500 text-white text-sm">🎮 Gangemon Mester</span>}
                         </div>
                     </div>
                 )}
@@ -1823,6 +1947,14 @@ const SOUNDS = {
                     <GangemonCollection 
                         gangemon={gangemon}
                         onClose={handleCloseGangemon}
+                    />
+                )}
+
+                {/* Badge Collection Modal */}
+                {showBadgeCollection && (
+                    <BadgeCollection 
+                        badges={badges}
+                        onClose={handleCloseBadges}
                     />
                 )}
 
