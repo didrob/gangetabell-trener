@@ -37,43 +37,43 @@ const POWER_UPS = [
 const GANGEMON = [
     // 2-gangen
     { id: "fire-dragon", name: "Fire Dragon", emoji: "🐉", table: 2, rarity: "common", unlockScore: 0, description: "En vennlig ild-drage som elsker 2-gangen" },
-    { id: "flame-sprite", name: "Flame Sprite", emoji: "🔥", table: 2, rarity: "rare", unlockScore: 50, description: "En liten flamme-ånd som danser med tallene" },
+    { id: "flame-sprite", name: "Flame Sprite", emoji: "🔥", table: 2, rarity: "rare", unlockScore: 10, description: "En liten flamme-ånd som danser med tallene" },
     
     // 3-gangen
     { id: "water-turtle", name: "Aqua Turtle", emoji: "🐢", table: 3, rarity: "common", unlockScore: 0, description: "En klok vann-skilpadde som behersker 3-gangen" },
-    { id: "wave-spirit", name: "Wave Spirit", emoji: "🌊", table: 3, rarity: "rare", unlockScore: 75, description: "En mystisk bølge-ånd fra havet" },
+    { id: "wave-spirit", name: "Wave Spirit", emoji: "🌊", table: 3, rarity: "rare", unlockScore: 15, description: "En mystisk bølge-ånd fra havet" },
     
     // 4-gangen
     { id: "earth-bear", name: "Earth Bear", emoji: "🐻", table: 4, rarity: "common", unlockScore: 0, description: "En sterk jord-bjørn som ruller med 4-gangen" },
-    { id: "mountain-giant", name: "Mountain Giant", emoji: "⛰️", table: 4, rarity: "rare", unlockScore: 100, description: "En mektig fjell-kjempe med stein-hjerte" },
+    { id: "mountain-giant", name: "Mountain Giant", emoji: "⛰️", table: 4, rarity: "rare", unlockScore: 20, description: "En mektig fjell-kjempe med stein-hjerte" },
     
     // 5-gangen
     { id: "wind-eagle", name: "Wind Eagle", emoji: "🦅", table: 5, rarity: "common", unlockScore: 0, description: "En stolt vind-ørn som svever over 5-gangen" },
-    { id: "storm-cloud", name: "Storm Cloud", emoji: "⛈️", table: 5, rarity: "rare", unlockScore: 125, description: "En kraftig storm-sky som tordner med tallene" },
+    { id: "storm-cloud", name: "Storm Cloud", emoji: "⛈️", table: 5, rarity: "rare", unlockScore: 25, description: "En kraftig storm-sky som tordner med tallene" },
     
     // 6-gangen
     { id: "ice-wolf", name: "Ice Wolf", emoji: "🐺", table: 6, rarity: "common", unlockScore: 0, description: "En kald is-ulv som jakter på 6-gangen" },
-    { id: "frost-queen", name: "Frost Queen", emoji: "❄️", table: 6, rarity: "rare", unlockScore: 150, description: "En elegant frost-dronning med is-krone" },
+    { id: "frost-queen", name: "Frost Queen", emoji: "❄️", table: 6, rarity: "rare", unlockScore: 30, description: "En elegant frost-dronning med is-krone" },
     
     // 7-gangen
     { id: "thunder-tiger", name: "Thunder Tiger", emoji: "🐅", table: 7, rarity: "common", unlockScore: 0, description: "En lynrask torden-tiger som raser gjennom 7-gangen" },
-    { id: "lightning-bolt", name: "Lightning Bolt", emoji: "⚡", table: 7, rarity: "rare", unlockScore: 175, description: "En elektrisk lyn-straal som gnistrer med energi" },
+    { id: "lightning-bolt", name: "Lightning Bolt", emoji: "⚡", table: 7, rarity: "rare", unlockScore: 35, description: "En elektrisk lyn-straal som gnistrer med energi" },
     
     // 8-gangen
     { id: "shadow-panther", name: "Shadow Panther", emoji: "🐆", table: 8, rarity: "common", unlockScore: 0, description: "En mystisk skygge-panter som smyger gjennom 8-gangen" },
-    { id: "night-spirit", name: "Night Spirit", emoji: "🌙", table: 8, rarity: "rare", unlockScore: 200, description: "En magisk natt-ånd som skinner i mørket" },
+    { id: "night-spirit", name: "Night Spirit", emoji: "🌙", table: 8, rarity: "rare", unlockScore: 40, description: "En magisk natt-ånd som skinner i mørket" },
     
     // 9-gangen
     { id: "golden-lion", name: "Golden Lion", emoji: "🦁", table: 9, rarity: "common", unlockScore: 0, description: "En majestetisk gull-løve som hersker over 9-gangen" },
-    { id: "sun-king", name: "Sun King", emoji: "☀️", table: 9, rarity: "rare", unlockScore: 225, description: "En strålende sol-konge med gull-krone" },
+    { id: "sun-king", name: "Sun King", emoji: "☀️", table: 9, rarity: "rare", unlockScore: 45, description: "En strålende sol-konge med gull-krone" },
     
     // 10-gangen
     { id: "cosmic-whale", name: "Cosmic Whale", emoji: "🐋", table: 10, rarity: "common", unlockScore: 0, description: "En enorm kosmisk hval som svømmer gjennom 10-gangen" },
-    { id: "star-emperor", name: "Star Emperor", emoji: "⭐", table: 10, rarity: "legendary", unlockScore: 300, description: "Den mektige stjerne-keiseren som behersker alle tall" },
+    { id: "star-emperor", name: "Star Emperor", emoji: "⭐", table: 10, rarity: "legendary", unlockScore: 60, description: "Den mektige stjerne-keiseren som behersker alle tall" },
     
     // Spesielle monstre
-    { id: "rainbow-unicorn", name: "Rainbow Unicorn", emoji: "🦄", table: "special", rarity: "legendary", unlockScore: 500, description: "En magisk regnbue-enhjørning som kan alt" },
-    { id: "phoenix", name: "Phoenix", emoji: "🔥", table: "special", rarity: "mythical", unlockScore: 1000, description: "Den legendariske føniks som gjenoppstår fra asken" }
+    { id: "rainbow-unicorn", name: "Rainbow Unicorn", emoji: "🦄", table: "special", rarity: "legendary", unlockScore: 100, description: "En magisk regnbue-enhjørning som kan alt" },
+    { id: "phoenix", name: "Phoenix", emoji: "🔥", table: "special", rarity: "mythical", unlockScore: 200, description: "Den legendariske føniks som gjenoppstår fra asken" }
 ];
 
 // Evolusjonsnivåer
@@ -175,8 +175,8 @@ const getAvailableStickers = (score) => {
 };
 
 // Gangemon-hjelpefunksjoner
-const getAvailableGangemon = (score) => {
-    return GANGEMON.filter(gangemon => score >= gangemon.unlockScore);
+const getAvailableGangemon = (totalCorrect) => {
+    return GANGEMON.filter(gangemon => totalCorrect >= gangemon.unlockScore);
 };
 
 const getGangemonByTable = (table) => {
@@ -192,9 +192,9 @@ const getEvolutionLevel = (score) => {
     return EVOLUTION_LEVELS[0];
 };
 
-const checkGangemonUnlock = (score, currentGangemon) => {
+const checkGangemonUnlock = (totalCorrect, currentGangemon) => {
     const newGangemon = GANGEMON.filter(gangemon => 
-        score >= gangemon.unlockScore && 
+        totalCorrect >= gangemon.unlockScore && 
         !currentGangemon.includes(gangemon.id)
     );
     return newGangemon;
@@ -1676,8 +1676,8 @@ const App = () => {
             setTimeout(() => setConfettiBurst(false), 1200);
         }
 
-        // Sjekk nye Gangemon
-        const newGangemon = checkGangemonUnlock(newScore, gangemon);
+        // Sjekk nye Gangemon (basert på antall riktige svar, ikke score)
+        const newGangemon = checkGangemonUnlock(stats.totalCorrect, gangemon);
         if (newGangemon.length > 0) {
             const updatedGangemon = [...gangemon, ...newGangemon.map(g => g.id)];
             setGangemon(updatedGangemon);
