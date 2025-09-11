@@ -836,11 +836,10 @@ const UserSelect = ({ onUserSelect, onNewUser }) => {
 };
 
 // FORENKLET StartMenu komponent
-const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, setIsMuted, currentAvatar, setCurrentAvatar, currentTheme, setCurrentTheme, powerUps, usePowerUp, dailyChallenge, soundVolume, setSoundVolume, soundType, setSoundType, soundFrequency, setSoundFrequency, playSfx, currentUser, onSwitchUser, onShowStats, onDeleteCurrentUser, badges, onShowBadges, gangemon, activeGangemonId, onSelectGangemon }) => {
+const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, setIsMuted, currentAvatar, setCurrentAvatar, currentTheme, setCurrentTheme, powerUps, usePowerUp, dailyChallenge, soundVolume, setSoundVolume, soundType, setSoundType, soundFrequency, setSoundFrequency, playSfx, currentUser, onSwitchUser, onShowStats, onDeleteCurrentUser, badges, onShowBadges, gangemon, activeGangemonId, onSelectGangemon, selectedOperation, setSelectedOperation, selectedDifficulty, setSelectedDifficulty }) => {
     const [gameMode, setGameMode] = useState(null); // 'classic' or 'adventure'
     const [selectedTable, setSelectedTable] = useState(null);
-    const [selectedOperation, setSelectedOperation] = useState('mul'); // add | sub | mul
-    const [selectedDifficulty, setSelectedDifficulty] = useState('easy'); // easy | medium | hard
+    // operation/difficulty styres fra App
     const [showSettings, setShowSettings] = useState(false);
     const [showAvatarSelect, setShowAvatarSelect] = useState(false);
     const [showThemeSelect, setShowThemeSelect] = useState(false);
@@ -1752,6 +1751,9 @@ const App = () => {
         }
     }, []);
 
+    const [selectedOperation, setSelectedOperation] = useState('mul');
+    const [selectedDifficulty, setSelectedDifficulty] = useState('easy');
+
     const handleStartGame = (table, gameMode = 'classic') => {
         setSelectedTable(table);
         setMode(gameMode === 'adventure' ? 'adventure' : 'normal');
@@ -2103,6 +2105,10 @@ const SOUNDS = {
                         onShowStats={() => setCurrentView('stats')}
                         onDeleteCurrentUser={handleDeleteCurrentUser}
                         // pass operation/difficulty to menu for selection state
+                        selectedOperation={selectedOperation}
+                        setSelectedOperation={setSelectedOperation}
+                        selectedDifficulty={selectedDifficulty}
+                        setSelectedDifficulty={setSelectedDifficulty}
                         gangemon={gangemon}
                         activeGangemonId={activeGangemonId}
                         onSelectGangemon={handleSelectGangemon}
