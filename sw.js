@@ -1,4 +1,5 @@
-const CACHE_NAME = 'gangetabell-cache-v4';
+const CACHE_VERSION = 'v5';
+const CACHE_NAME = `gangetabell-cache-${CACHE_VERSION}`;
 const ASSETS = [
   '/',
   '/index.html',
@@ -15,6 +16,8 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
   );
+  // Activate immediately on install
+  self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
@@ -23,6 +26,8 @@ self.addEventListener('activate', (event) => {
       keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
     ))
   );
+  // Take control of open clients (tabs) without reload requirement
+  self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {

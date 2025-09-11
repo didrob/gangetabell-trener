@@ -2417,7 +2417,32 @@ const InstallButton = () => {
 // PWA: registrer service worker hvis støttet
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').catch(() => {});
+        navigator.serviceWorker.register('/sw.js').then((registration) => {
+            // If there's an updated SW waiting, trigger activation
+            if (registration.waiting) {
+                registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+            }
+
+            // Listen for updates found
+            registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                if (!newWorker) return;
+                newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        // New update installed, ask it to activate immediately
+                        newWorker.postMessage({ type: 'SKIP_WAITING' });
+                    }
+                });
+            });
+        }).catch(() => {});
+
+        // Auto-reload once when the new SW takes control
+        let hasReloaded = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (hasReloaded) return;
+            hasReloaded = true;
+            window.location.reload();
+        });
     });
 }
 
