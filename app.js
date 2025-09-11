@@ -33,7 +33,19 @@ const POWER_UPS = [
     { id: "time", name: "Ekstra Tid", emoji: "⏰", duration: 0, cost: 40 }
 ];
 
-// Gangemon-system (temporarily removed for clean implementation)
+// Gangemon – V1 enkel liste (id, navn, emoji, sjeldenhet, unlockAt, optional table)
+const GANGEMON = [
+    { id: 'c1', name: 'Fire Dragon', emoji: '🐉', rarity: 'common', unlockAt: 0, table: 2 },
+    { id: 'c2', name: 'Aqua Turtle', emoji: '🐢', rarity: 'common', unlockAt: 0, table: 3 },
+    { id: 'c3', name: 'Earth Bear', emoji: '🐻', rarity: 'common', unlockAt: 0, table: 4 },
+    { id: 'r1', name: 'Flame Sprite', emoji: '🔥', rarity: 'rare', unlockAt: 15, table: 2 },
+    { id: 'r2', name: 'Wave Spirit', emoji: '🌊', rarity: 'rare', unlockAt: 30, table: 3 },
+    { id: 'r3', name: 'Mountain Giant', emoji: '⛰️', rarity: 'rare', unlockAt: 45, table: 4 },
+    { id: 'r4', name: 'Storm Cloud', emoji: '⛈️', rarity: 'rare', unlockAt: 60, table: 5 },
+    { id: 'l1', name: 'Star Emperor', emoji: '⭐', rarity: 'legendary', unlockAt: 90 },
+    { id: 'l2', name: 'Diamond King', emoji: '💎', rarity: 'legendary', unlockAt: 120 },
+    { id: 'm1', name: 'Phoenix', emoji: '🔥', rarity: 'mythical', unlockAt: 180 }
+];
 
 // Evolusjonsnivåer
 const EVOLUTION_LEVELS = [
@@ -1205,7 +1217,10 @@ const App = () => {
     const [badges, setBadges] = useState([]);
     const [streakForBadge, setStreakForBadge] = useState(0);
     const [lastRushSummary, setLastRushSummary] = useState(null);
-    // Gangemon state temporarily removed
+    // Gangemon V1 state
+    const [gangemon, setGangemon] = useState([]); // owned ids
+    const [pendingGangemon, setPendingGangemon] = useState([]); // queue for modal
+    const [showNewGangemon, setShowNewGangemon] = useState(false);
     const [showBadgeCollection, setShowBadgeCollection] = useState(false);
     
     // Nye state for alle funksjoner
@@ -1266,7 +1281,9 @@ const App = () => {
             }
         });
         setBadges(data.badges || []);
-        // Gangemon loading temporarily removed
+        // Gangemon V1: load owned and pending if present
+        setGangemon(Array.isArray(data.gangemon) ? data.gangemon : []);
+        setPendingGangemon(Array.isArray(data.pendingGangemon) ? data.pendingGangemon : []);
         setDailyChallenge(getDailyChallenge());
         setCurrentView('menu');
     };
@@ -1281,8 +1298,9 @@ const App = () => {
                 isMuted,
                 powerUps,
                 stats,
-                badges
-                // gangemon temporarily removed
+                badges,
+                gangemon,
+                pendingGangemon
             };
             saveUserData(currentUser, updatedData);
             setUserData(updatedData);
@@ -1307,7 +1325,8 @@ const App = () => {
                 soundFrequency: localStorage.getItem('gangetabell-sound-frequency') || 'normal',
                 powerUps: { double: { active: false, endTime: 0 }, hint: { uses: 0 }, time: { uses: 0 } },
                 badges: [],
-                // gangemon temporarily removed
+                gangemon: [],
+                pendingGangemon: [],
                 stats: {
                     totalCorrect: 0,
                     maxStreak: 0,
@@ -1386,6 +1405,16 @@ const App = () => {
     const handleStartGame = (table, gameMode = 'classic') => {
         setSelectedTable(table);
         setMode(gameMode === 'adventure' ? 'adventure' : 'normal');
+        // V1: Gi start-common første gang Adventure åpnes for bruker uten noen gangemon
+        if (gameMode === 'adventure' && gangemon.length === 0) {
+            const commons = GANGEMON.filter(g => g.rarity === 'common');
+            const random = commons[Math.floor(Math.random() * commons.length)];
+            if (random && !gangemon.includes(random.id)) {
+                setGangemon([random.id]);
+                setPendingGangemon([random.id]);
+                setShowNewGangemon(true);
+            }
+        }
         setCurrentView('game');
     };
 
@@ -1496,7 +1525,17 @@ const App = () => {
             setTimeout(() => setConfettiBurst(false), 1200);
         }
 
-        // Gangemon unlock logic temporarily removed
+        // Gangemon V1 unlock (Adventure only, 1 per riktig svar)
+        if (mode === 'adventure' && isCorrect) {
+            const updatedTotalCorrect = stats.totalCorrect + 1;
+            // Finn første ulåste med unlockAt <= updatedTotalCorrect
+            const next = GANGEMON.find(g => updatedTotalCorrect >= g.unlockAt && !gangemon.includes(g.id));
+            if (next) {
+                setGangemon(prev => [...prev, next.id]);
+                setPendingGangemon(prev => [...prev, next.id]);
+                setShowNewGangemon(true);
+            }
+        }
 
         // Oppdater daglig utfordring
         if (isCorrect && dailyChallenge && !dailyChallenge.completed) {
@@ -1760,7 +1799,42 @@ const SOUNDS = {
                     </div>
                 )}
 
-                {/* Gangemon Collection Modal temporarily removed */}
+                {/* New Gangemon Unlock Modal (V1) */}
+                {showNewGangemon && pendingGangemon.length > 0 && (
+                    <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
+                        <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl p-8 max-w-md w-full text-center">
+                            <h2 className="text-3xl font-bold text-white mb-4">🎉 Ny Gangemon!</h2>
+                            {(() => {
+                                const id = pendingGangemon[0];
+                                const g = GANGEMON.find(x => x.id === id);
+                                if (!g) return null;
+                                return (
+                                    <div className="mb-4">
+                                        <div className="text-6xl mb-2 animate-bounce">{g.emoji}</div>
+                                        <h3 className="text-2xl font-bold text-white mb-2">{g.name}</h3>
+                                        <div className={`inline-block px-3 py-1 rounded-full text-sm font-bold text-white ${
+                                            g.rarity === 'common' ? 'bg-gray-500' :
+                                            g.rarity === 'rare' ? 'bg-blue-500' :
+                                            g.rarity === 'legendary' ? 'bg-purple-500' :
+                                            'bg-yellow-500'
+                                        }`}>
+                                            {g.rarity.toUpperCase()}
+                                        </div>
+                                    </div>
+                                );
+                            })()}
+                            <button
+                                onClick={() => {
+                                    setPendingGangemon(prev => prev.slice(1));
+                                    setShowNewGangemon(prev => prev && pendingGangemon.length - 1 > 0);
+                                }}
+                                className="bg-white text-purple-600 px-6 py-3 rounded-xl font-bold text-lg hover:bg-gray-100 transition-colors"
+                            >
+                                Fantastisk! 🚀
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {/* Badge Collection Modal */}
                 {showBadgeCollection && (
@@ -1770,11 +1844,25 @@ const SOUNDS = {
                     />
                 )}
 
-                {/* New Gangemon Unlock Modal temporarily removed */}
+                {/* Enkel Gangemon-oversikt i meny */}
+                {currentView === 'menu' && gangemon.length > 0 && (
+                    <div className="mt-6 bg-white/20 backdrop-blur-sm rounded-2xl p-4 text-white">
+                        <div className="flex items-center justify-between">
+                            <div className="font-bold">🎮 Gangemon: {gangemon.length}</div>
+                            <div className="flex gap-2 flex-wrap">
+                                {gangemon.slice(0,6).map(id => {
+                                    const g = GANGEMON.find(x => x.id === id);
+                                    return <span key={id} className="text-2xl" title={g?.name}>{g?.emoji || '❓'}</span>
+                                })}
+                                {gangemon.length > 6 && <span className="opacity-80">+{gangemon.length - 6}</span>}
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
-};
+}
 
 // Installer-app prompt
 let deferredPrompt = null;
