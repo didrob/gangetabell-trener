@@ -1435,15 +1435,28 @@ const Game = ({ selectedTable, selectedOperation = 'mul', selectedDifficulty = '
 
     if (!currentQuestion) return <div>Laster...</div>;
 
+    // ESC for tilbake til meny
+    useEffect(() => {
+        const onKey = (e) => {
+            if (e.key === 'Escape') onBackToMenu && onBackToMenu();
+        };
+        document.addEventListener('keydown', onKey);
+        return () => document.removeEventListener('keydown', onKey);
+    }, [onBackToMenu]);
+
     return (
         <div className="text-center p-8">
             <div className="flex justify-between items-center mb-8">
-                <button
-                    onClick={onBackToMenu}
-                    className="bg-red-500 hover:bg-red-600 text-white text-xl font-bold py-3 px-6 rounded-2xl transition-all duration-200 transform hover:scale-105 shadow-lg"
-                >
-                    ← Tilbake til meny
-                </button>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={onBackToMenu}
+                        className="bg-red-500 hover:bg-red-600 text-white text-xl font-bold py-3 px-6 rounded-2xl transition-all duration-200 transform hover:scale-105 shadow-lg"
+                        aria-label="Tilbake til meny (Esc)"
+                    >
+                        ← Tilbake
+                    </button>
+                    <span className="text-white/70 hidden md:inline text-sm">Esc</span>
+                </div>
                 <div className="flex items-center gap-4 text-white text-xl">
                     {mode === 'rush' && (
                         <span>⏱️ {timeLeft}s</span>
