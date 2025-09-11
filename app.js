@@ -33,6 +33,19 @@ const POWER_UPS = [
     { id: "time", name: "Ekstra Tid", emoji: "⏰", duration: 0, cost: 40 }
 ];
 
+// Oppgavetyper og vanskelighetsgrader
+const OPERATIONS = [
+    { id: 'add', label: '+', name: 'Addisjon' },
+    { id: 'sub', label: '−', name: 'Subtraksjon' },
+    { id: 'mul', label: '×', name: 'Multiplikasjon' }
+];
+
+const DIFFICULTIES = [
+    { id: 'easy', name: 'Lett', range: 10 },
+    { id: 'medium', name: 'Middels', range: 20 },
+    { id: 'hard', name: 'Vanskelig', range: 100 }
+];
+
 // Gangemon – V2 med effektkart (id, navn, emoji, sjeldenhet, unlockAt, optional table, effects)
 const GANGEMON = [
     { id: 'c1', name: 'Fire Dragon', emoji: '🐉', rarity: 'common', unlockAt: 0, table: 2, effects: { scoreBonus: 0.05, streakBuffer: 1 } },
@@ -190,21 +203,49 @@ const getDailyChallenge = () => {
     return newChallenge;
 };
 
-// Generer tilfeldig oppgave
-const generateQuestion = (selectedTable = null) => {
-    let tables = [2, 3, 4, 5, 6, 7, 8, 9, 10];
-    if (selectedTable) {
-        tables = [selectedTable];
+// Generer tilfeldig oppgave (utvidet: operasjon + nivå)
+// operation: 'add' | 'sub' | 'mul'
+// difficulty: 'easy' | 'medium' | 'hard'
+const generateQuestion = (selectedTable = null, operation = 'mul', difficulty = 'easy') => {
+    // Multiplikasjon (eksisterende logikk)
+    if (operation === 'mul') {
+        let tables = [2, 3, 4, 5, 6, 7, 8, 9, 10];
+        if (selectedTable) {
+            tables = [selectedTable];
+        }
+        const table = tables[Math.floor(Math.random() * tables.length)];
+        const multiplier = Math.floor(Math.random() * 10) + 1;
+        const answer = table * multiplier;
+        return {
+            question: `${table} × ${multiplier}`,
+            answer,
+            table,
+            operation
+        };
     }
-    
-    const table = tables[Math.floor(Math.random() * tables.length)];
-    const multiplier = Math.floor(Math.random() * 10) + 1;
-    const answer = table * multiplier;
-    
+
+    // Addisjon/Subtraksjon
+    const diffCfg = DIFFICULTIES.find(d => d.id === difficulty) || DIFFICULTIES[0];
+    const max = diffCfg.range;
+    const a = Math.floor(Math.random() * (max + 1));
+    const b = Math.floor(Math.random() * (max + 1));
+
+    if (operation === 'add') {
+        return {
+            question: `${a} + ${b}`,
+            answer: a + b,
+            operation,
+            difficulty
+        };
+    }
+    // sub
+    // For UX: unngå negative svar i enklere nivåer
+    const [x, y] = a >= b ? [a, b] : [b, a];
     return {
-        question: `${table} × ${multiplier}`,
-        answer: answer,
-        table: table
+        question: `${x} − ${y}`,
+        answer: x - y,
+        operation,
+        difficulty
     };
 };
 
@@ -798,6 +839,8 @@ const UserSelect = ({ onUserSelect, onNewUser }) => {
 const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, setIsMuted, currentAvatar, setCurrentAvatar, currentTheme, setCurrentTheme, powerUps, usePowerUp, dailyChallenge, soundVolume, setSoundVolume, soundType, setSoundType, soundFrequency, setSoundFrequency, playSfx, currentUser, onSwitchUser, onShowStats, onDeleteCurrentUser, badges, onShowBadges, gangemon, activeGangemonId, onSelectGangemon }) => {
     const [gameMode, setGameMode] = useState(null); // 'classic' or 'adventure'
     const [selectedTable, setSelectedTable] = useState(null);
+    const [selectedOperation, setSelectedOperation] = useState('mul'); // add | sub | mul
+    const [selectedDifficulty, setSelectedDifficulty] = useState('easy'); // easy | medium | hard
     const [showSettings, setShowSettings] = useState(false);
     const [showAvatarSelect, setShowAvatarSelect] = useState(false);
     const [showThemeSelect, setShowThemeSelect] = useState(false);
@@ -923,7 +966,51 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                 </div>
             )}
 
-            {/* Tabell valg - kun vis hvis spillmodus er valgt */}
+            {/* Oppgavetype og nivåvalg */}
+            {gameMode && (
+                <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 mb-8" aria-label="Oppgavevalg">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h2 className="text-2xl font-bold text-white mb-4">Velg oppgavetype:</h2>
+                            <div className="flex gap-2" role="group" aria-label="Oppgavetyper">
+                                {OPERATIONS.map(op => (
+                                    <button
+                                        key={op.id}
+                                        onClick={() => setSelectedOperation(op.id)}
+                                        className={`p-3 rounded-xl text-lg font-bold transition-all duration-200 ${
+                                            selectedOperation === op.id ? 'bg-yellow-400 text-black transform scale-105' : 'bg-white/30 text-white hover:bg-white/50'
+                                        }`}
+                                        aria-pressed={selectedOperation === op.id}
+                                        aria-label={op.name}
+                                    >
+                                        {op.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                        <div>
+                            <h2 className="text-2xl font-bold text-white mb-4">Velg nivå:</h2>
+                            <div className="flex gap-2" role="group" aria-label="Vanskelighetsnivå">
+                                {DIFFICULTIES.map(df => (
+                                    <button
+                                        key={df.id}
+                                        onClick={() => setSelectedDifficulty(df.id)}
+                                        className={`p-3 rounded-xl text-lg font-bold transition-all duration-200 ${
+                                            selectedDifficulty === df.id ? 'bg-green-400 text-black transform scale-105' : 'bg-white/30 text-white hover:bg-white/50'
+                                        }`}
+                                        aria-pressed={selectedDifficulty === df.id}
+                                        aria-label={df.name}
+                                    >
+                                        {df.name}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Tabell valg - kun vis hvis multiplikasjon valgt */}
             {gameMode && (
             <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 mb-8">
                     <div className="flex items-center justify-between mb-6">
@@ -935,7 +1022,7 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                             ← Tilbake til modus
                         </button>
                     </div>
-                <div className="grid grid-cols-5 gap-3 mb-4">
+                <div className={`grid grid-cols-5 gap-3 mb-4 ${selectedOperation !== 'mul' ? 'opacity-50 pointer-events-none' : ''}`}>
                     {[2, 3, 4, 5, 6, 7, 8, 9, 10].map(table => (
                         <button
                             key={table}
@@ -970,7 +1057,7 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                     onClick={handleStart}
                     className="bg-green-500 hover:bg-green-600 text-white text-2xl md:text-3xl font-bold py-4 md:py-6 px-8 md:px-12 rounded-2xl transition-all duration-200 transform hover:scale-105 shadow-2xl w-full md:w-auto"
                 >
-                        🚀 START {gameMode === 'classic' ? 'KLASSISK' : 'ADVENTURE'}
+                        🚀 START {gameMode === 'classic' ? 'KLASSISK' : 'ADVENTURE'} {selectedOperation === 'add' ? '(+)' : selectedOperation === 'sub' ? '(−)' : '(×)'}
                 </button>
                     {gameMode === 'adventure' && (
                 <button
@@ -1246,7 +1333,7 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
 
 
 // Spill komponent
-const Game = ({ selectedTable, onBackToMenu, onScoreUpdate, onGameOver, mode = 'normal', playSfx, triggerConfetti, powerUps, usePowerUp, activeGangemonId }) => {
+const Game = ({ selectedTable, selectedOperation = 'mul', selectedDifficulty = 'easy', onBackToMenu, onScoreUpdate, onGameOver, mode = 'normal', playSfx, triggerConfetti, powerUps, usePowerUp, activeGangemonId }) => {
     const [currentQuestion, setCurrentQuestion] = useState(null);
     const [answers, setAnswers] = useState([]);
     const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -1285,7 +1372,7 @@ const Game = ({ selectedTable, onBackToMenu, onScoreUpdate, onGameOver, mode = '
     }, []);
 
     const generateNewQuestion = () => {
-        const question = generateQuestion(selectedTable);
+        const question = generateQuestion(selectedTable, selectedOperation, selectedDifficulty);
         const wrongAnswers = generateWrongAnswers(question.answer);
         const allAnswers = [question.answer, ...wrongAnswers].sort(() => Math.random() - 0.5);
         setCurrentQuestion(question);
@@ -1422,7 +1509,7 @@ const Game = ({ selectedTable, onBackToMenu, onScoreUpdate, onGameOver, mode = '
 
             <div className="bg-white/20 backdrop-blur-sm rounded-3xl p-8 mb-8">
                 <h2 className="text-4xl font-bold text-white mb-8">
-                    {mode === 'adventure' ? '🎮 Adventure Mode' : '📚 Klassisk Modus'} - {selectedTable ? `${selectedTable}-gangen` : 'Blandet oppgaver'}
+                    {mode === 'adventure' ? '🎮 Adventure Mode' : '📚 Klassisk Modus'} · {selectedOperation === 'add' ? 'Addisjon' : selectedOperation === 'sub' ? 'Subtraksjon' : 'Multiplikasjon'} · {selectedDifficulty === 'easy' ? 'Lett' : selectedDifficulty === 'medium' ? 'Middels' : 'Vanskelig'} {selectedOperation === 'mul' ? `· ${selectedTable ? `${selectedTable}-gangen` : 'Blandet'}` : ''}
                 </h2>
                 
                 <div className={`text-6xl font-bold text-white mb-8 transition-all duration-300 ${animation} relative`}>
@@ -2015,6 +2102,7 @@ const SOUNDS = {
                         onSwitchUser={() => setCurrentView('userSelect')}
                         onShowStats={() => setCurrentView('stats')}
                         onDeleteCurrentUser={handleDeleteCurrentUser}
+                        // pass operation/difficulty to menu for selection state
                         gangemon={gangemon}
                         activeGangemonId={activeGangemonId}
                         onSelectGangemon={handleSelectGangemon}
@@ -2029,6 +2117,8 @@ const SOUNDS = {
                 ) : (
                     <Game 
                         selectedTable={selectedTable}
+                        selectedOperation={selectedOperation}
+                        selectedDifficulty={selectedDifficulty}
                         onBackToMenu={handleBackToMenu}
                         onScoreUpdate={(points, isCorrect, answerTime, currentStreak) => {
                             setStreakForBadge(prev => {
