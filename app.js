@@ -33,6 +33,20 @@ const POWER_UPS = [
     { id: "time", name: "Ekstra Tid", emoji: "⏰", duration: 0, cost: 40 }
 ];
 
+// Oppgavetyper og vanskelighetsgrader
+const OPERATIONS = [
+    { id: 'add', label: '+', name: 'Addisjon' },
+    { id: 'sub', label: '−', name: 'Subtraksjon' },
+    { id: 'mul', label: '×', name: 'Multiplikasjon' },
+    { id: 'div', label: '÷', name: 'Divisjon' }
+];
+
+const DIFFICULTIES = [
+    { id: 'easy', name: 'Lett', range: 10 },
+    { id: 'medium', name: 'Middels', range: 20 },
+    { id: 'hard', name: 'Vanskelig', range: 100 }
+];
+
 // Gangemon – V2 med effektkart (id, navn, emoji, sjeldenhet, unlockAt, optional table, effects)
 const GANGEMON = [
     { id: 'c1', name: 'Fire Dragon', emoji: '🐉', rarity: 'common', unlockAt: 0, table: 2, effects: { scoreBonus: 0.05, streakBuffer: 1 } },
@@ -190,21 +204,62 @@ const getDailyChallenge = () => {
     return newChallenge;
 };
 
-// Generer tilfeldig oppgave
-const generateQuestion = (selectedTable = null) => {
-    let tables = [2, 3, 4, 5, 6, 7, 8, 9, 10];
-    if (selectedTable) {
-        tables = [selectedTable];
+// Generer tilfeldig oppgave (utvidet: operasjon + nivå)
+// operation: 'add' | 'sub' | 'mul'
+// difficulty: 'easy' | 'medium' | 'hard'
+const generateQuestion = (selectedTable = null, operation = 'mul', difficulty = 'easy') => {
+    // Multiplikasjon (eksisterende logikk)
+    if (operation === 'mul') {
+        let tables = [2, 3, 4, 5, 6, 7, 8, 9, 10];
+        if (selectedTable) {
+            tables = [selectedTable];
+        }
+        const table = tables[Math.floor(Math.random() * tables.length)];
+        const multiplier = Math.floor(Math.random() * 10) + 1;
+        const answer = table * multiplier;
+        return {
+            question: `${table} × ${multiplier}`,
+            answer,
+            table,
+            operation
+        };
     }
-    
-    const table = tables[Math.floor(Math.random() * tables.length)];
-    const multiplier = Math.floor(Math.random() * 10) + 1;
-    const answer = table * multiplier;
-    
+
+    // Addisjon/Subtraksjon/Divisjon
+    const diffCfg = DIFFICULTIES.find(d => d.id === difficulty) || DIFFICULTIES[0];
+    const max = diffCfg.range;
+    const a = Math.floor(Math.random() * (max + 1));
+    const b = Math.floor(Math.random() * (max + 1));
+
+    if (operation === 'add') {
+        return {
+            question: `${a} + ${b}`,
+            answer: a + b,
+            operation,
+            difficulty
+        };
+    }
+    if (operation === 'div') {
+        // Heltallsdivisjon uten rest: konstruer ved å gange og så dele
+        const divisor = Math.max(1, Math.floor(Math.random() * (Math.min(max, 10)) + 1));
+        const quotient = Math.floor(Math.random() * (Math.floor(max / Math.max(divisor,1)) + 1));
+        const dividend = divisor * quotient;
+        return {
+            question: `${dividend} ÷ ${divisor}`,
+            answer: quotient,
+            operation,
+            difficulty
+        };
+    }
+
+    // sub
+    // For UX: unngå negative svar i enklere nivåer
+    const [x, y] = a >= b ? [a, b] : [b, a];
     return {
-        question: `${table} × ${multiplier}`,
-        answer: answer,
-        table: table
+        question: `${x} − ${y}`,
+        answer: x - y,
+        operation,
+        difficulty
     };
 };
 
@@ -222,6 +277,20 @@ const generateWrongAnswers = (correctAnswer) => {
 
 // Statistikk komponent
 const StatsOverview = ({ stats, onBack }) => {
+    const getOperationStats = () => {
+        const ops = [
+            { id: 'add', name: 'Addisjon', emoji: '➕' },
+            { id: 'sub', name: 'Subtraksjon', emoji: '➖' },
+            { id: 'mul', name: 'Multiplikasjon', emoji: '✖️' },
+            { id: 'div', name: 'Divisjon', emoji: '➗' },
+            { id: 'mixed', name: 'Blandet', emoji: '🎲' }
+        ];
+        return ops.map(op => {
+            const s = stats.operationStats?.[op.id] || { correct: 0, total: 0 };
+            const percentage = s.total > 0 ? Math.round((s.correct / s.total) * 100) : 0;
+            return { ...op, correct: s.correct, total: s.total, percentage };
+        });
+    };
     const getTableStats = () => {
         const tables = [2, 3, 4, 5, 6, 7, 8, 9, 10];
         return tables.map(table => {
@@ -237,6 +306,7 @@ const StatsOverview = ({ stats, onBack }) => {
     };
 
     const tableStats = getTableStats();
+    const opStats = getOperationStats();
     const mixedStat = stats.tableStats?.mixed || { correct: 0, total: 0 };
     const mixedPercentage = mixedStat.total > 0 ? Math.round((mixedStat.correct / mixedStat.total) * 100) : 0;
 
@@ -292,6 +362,23 @@ const StatsOverview = ({ stats, onBack }) => {
                         className={`h-4 rounded-full transition-all duration-300 ${getColorClass(mixedPercentage)}`}
                         style={{ width: `${mixedPercentage}%` }}
                     ></div>
+                </div>
+            </div>
+
+            {/* Per operasjon */}
+            <div className="bg-white/30 backdrop-blur-sm rounded-2xl p-6 mb-6">
+                <h2 className="text-2xl font-bold text-white mb-4">🧮 Per operasjon</h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {opStats.map(op => (
+                        <div key={op.id} className="bg-white/10 rounded-xl p-4 text-white">
+                            <div className="text-xl font-bold mb-1">{op.emoji} {op.name}</div>
+                            <div className="text-lg">{op.correct}/{op.total}</div>
+                            <div className="text-sm mb-2">{op.percentage}% riktig</div>
+                            <div className="w-full bg-white/20 rounded-full h-2">
+                                <div className={`h-2 rounded-full ${op.percentage>=80?'bg-green-500':op.percentage>=60?'bg-yellow-500':op.percentage>=40?'bg-orange-500':'bg-red-500'}`} style={{ width: `${op.percentage}%` }} />
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
 
@@ -795,9 +882,10 @@ const UserSelect = ({ onUserSelect, onNewUser }) => {
 };
 
 // FORENKLET StartMenu komponent
-const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, setIsMuted, currentAvatar, setCurrentAvatar, currentTheme, setCurrentTheme, powerUps, usePowerUp, dailyChallenge, soundVolume, setSoundVolume, soundType, setSoundType, soundFrequency, setSoundFrequency, playSfx, currentUser, onSwitchUser, onShowStats, onDeleteCurrentUser, badges, onShowBadges, gangemon, activeGangemonId, onSelectGangemon }) => {
+const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, setIsMuted, currentAvatar, setCurrentAvatar, currentTheme, setCurrentTheme, powerUps, usePowerUp, dailyChallenge, soundVolume, setSoundVolume, soundType, setSoundType, soundFrequency, setSoundFrequency, playSfx, currentUser, onSwitchUser, onShowStats, onDeleteCurrentUser, badges, onShowBadges, gangemon, activeGangemonId, onSelectGangemon, selectedOperation, setSelectedOperation, selectedOperations, setSelectedOperations, selectedDifficulty, setSelectedDifficulty }) => {
     const [gameMode, setGameMode] = useState(null); // 'classic' or 'adventure'
     const [selectedTable, setSelectedTable] = useState(null);
+    // operation/difficulty styres fra App
     const [showSettings, setShowSettings] = useState(false);
     const [showAvatarSelect, setShowAvatarSelect] = useState(false);
     const [showThemeSelect, setShowThemeSelect] = useState(false);
@@ -923,7 +1011,72 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                 </div>
             )}
 
-            {/* Tabell valg - kun vis hvis spillmodus er valgt */}
+            {/* Oppgavetype og nivåvalg */}
+            {gameMode && (
+                <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 mb-8" aria-label="Oppgavevalg">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h2 className="text-2xl font-bold text-white mb-4">Velg oppgavetype:</h2>
+                            <div className="flex gap-2" role="group" aria-label="Oppgavetyper (fler-valg)">
+                                {OPERATIONS.map(op => {
+                                    const active = selectedOperations.includes(op.id);
+                                    return (
+                                        <button
+                                            key={op.id}
+                                            onClick={() => {
+                                                setSelectedOperations(prev => {
+                                                    const has = prev.includes(op.id);
+                                                    let next = has ? prev.filter(x => x !== op.id) : [...prev, op.id];
+                                                    if (next.length === 0) next = ['mul'];
+                                                    // Oppdater valgt operasjon slik at den alltid er i next
+                                                    if (!has) {
+                                                        // Vi la til denne – gjør den aktiv
+                                                        setSelectedOperation(op.id);
+                                                    } else if (!next.includes(selectedOperation)) {
+                                                        // Fjernet aktiv operasjon – velg første tilgjengelige
+                                                        setSelectedOperation(next[0]);
+                                                    }
+                                                    return next;
+                                                });
+                                            }}
+                                            className={`p-3 rounded-xl text-lg font-bold transition-all duration-200 ${
+                                                active ? 'bg-yellow-400 text-black transform scale-105' : 'bg-white/30 text-white hover:bg-white/50'
+                                            }`}
+                                            aria-pressed={active}
+                                            aria-label={`${op.name} ${active ? 'valgt' : 'ikke valgt'}`}
+                                        >
+                                            {op.label}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                            {selectedOperations.length > 1 && (
+                                <div className="mt-2 text-sm font-bold text-white/80">Blandet oppgaver aktivert</div>
+                            )}
+                        </div>
+                        <div>
+                            <h2 className="text-2xl font-bold text-white mb-4">Velg nivå:</h2>
+                            <div className="flex gap-2" role="group" aria-label="Vanskelighetsnivå">
+                                {DIFFICULTIES.map(df => (
+                                    <button
+                                        key={df.id}
+                                        onClick={() => setSelectedDifficulty(df.id)}
+                                        className={`p-3 rounded-xl text-lg font-bold transition-all duration-200 ${
+                                            selectedDifficulty === df.id ? 'bg-green-400 text-black transform scale-105' : 'bg-white/30 text-white hover:bg-white/50'
+                                        }`}
+                                        aria-pressed={selectedDifficulty === df.id}
+                                        aria-label={df.name}
+                                    >
+                                        {df.name}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Tabell valg - kun vis hvis multiplikasjon valgt */}
             {gameMode && (
             <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 mb-8">
                     <div className="flex items-center justify-between mb-6">
@@ -935,7 +1088,7 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                             ← Tilbake til modus
                         </button>
                     </div>
-                <div className="grid grid-cols-5 gap-3 mb-4">
+                <div className={`grid grid-cols-5 gap-3 mb-4 ${!selectedOperations.includes('mul') ? 'opacity-50 pointer-events-none' : ''}`}>
                     {[2, 3, 4, 5, 6, 7, 8, 9, 10].map(table => (
                         <button
                             key={table}
@@ -970,7 +1123,7 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                     onClick={handleStart}
                     className="bg-green-500 hover:bg-green-600 text-white text-2xl md:text-3xl font-bold py-4 md:py-6 px-8 md:px-12 rounded-2xl transition-all duration-200 transform hover:scale-105 shadow-2xl w-full md:w-auto"
                 >
-                        🚀 START {gameMode === 'classic' ? 'KLASSISK' : 'ADVENTURE'}
+                        🚀 START {gameMode === 'classic' ? 'KLASSISK' : 'ADVENTURE'} {selectedOperation === 'add' ? '(+)' : selectedOperation === 'sub' ? '(−)' : '(×)'}
                 </button>
                     {gameMode === 'adventure' && (
                 <button
@@ -1246,7 +1399,7 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
 
 
 // Spill komponent
-const Game = ({ selectedTable, onBackToMenu, onScoreUpdate, onGameOver, mode = 'normal', playSfx, triggerConfetti, powerUps, usePowerUp, activeGangemonId }) => {
+const Game = ({ selectedTable, selectedOperation = 'mul', selectedOperations = ['mul'], selectedDifficulty = 'easy', onBackToMenu, onScoreUpdate, onGameOver, mode = 'normal', playSfx, triggerConfetti, powerUps, usePowerUp, activeGangemonId }) => {
     const [currentQuestion, setCurrentQuestion] = useState(null);
     const [answers, setAnswers] = useState([]);
     const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -1284,8 +1437,20 @@ const Game = ({ selectedTable, onBackToMenu, onScoreUpdate, onGameOver, mode = '
         }
     }, []);
 
+    // ESC for tilbake til meny – må være før eventuell early return for å unngå hooks-rot
+    useEffect(() => {
+        const onKey = (e) => {
+            if (e.key === 'Escape') onBackToMenu && onBackToMenu();
+        };
+        document.addEventListener('keydown', onKey);
+        return () => document.removeEventListener('keydown', onKey);
+    }, [onBackToMenu]);
+
     const generateNewQuestion = () => {
-        const question = generateQuestion(selectedTable);
+        const op = (selectedOperations && selectedOperations.length > 1)
+            ? selectedOperations[Math.floor(Math.random() * selectedOperations.length)]
+            : selectedOperation;
+        const question = generateQuestion(selectedTable, op, selectedDifficulty);
         const wrongAnswers = generateWrongAnswers(question.answer);
         const allAnswers = [question.answer, ...wrongAnswers].sort(() => Math.random() - 0.5);
         setCurrentQuestion(question);
@@ -1352,12 +1517,17 @@ const Game = ({ selectedTable, onBackToMenu, onScoreUpdate, onGameOver, mode = '
     return (
         <div className="text-center p-8">
             <div className="flex justify-between items-center mb-8">
-                <button
-                    onClick={onBackToMenu}
-                    className="bg-red-500 hover:bg-red-600 text-white text-xl font-bold py-3 px-6 rounded-2xl transition-all duration-200 transform hover:scale-105 shadow-lg"
-                >
-                    ← Tilbake til meny
-                </button>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={onBackToMenu}
+                        className="bg-red-600 hover:bg-red-700 text-white text-2xl font-extrabold py-3 px-7 rounded-2xl transition-all duration-200 transform hover:scale-105 shadow-2xl focus:outline-none focus:ring-4 focus:ring-white/70"
+                        aria-label="Tilbake til meny (Esc)"
+                        title="Tilbake til meny"
+                    >
+                        ⬅️ TILBAKE
+                    </button>
+                    <span className="text-white/70 hidden md:inline text-sm">Esc</span>
+                </div>
                 <div className="flex items-center gap-4 text-white text-xl">
                     {mode === 'rush' && (
                         <span>⏱️ {timeLeft}s</span>
@@ -1422,7 +1592,7 @@ const Game = ({ selectedTable, onBackToMenu, onScoreUpdate, onGameOver, mode = '
 
             <div className="bg-white/20 backdrop-blur-sm rounded-3xl p-8 mb-8">
                 <h2 className="text-4xl font-bold text-white mb-8">
-                    {mode === 'adventure' ? '🎮 Adventure Mode' : '📚 Klassisk Modus'} - {selectedTable ? `${selectedTable}-gangen` : 'Blandet oppgaver'}
+                    {mode === 'adventure' ? '🎮 Adventure Mode' : '📚 Klassisk Modus'} · {selectedOperation === 'add' ? 'Addisjon' : selectedOperation === 'sub' ? 'Subtraksjon' : 'Multiplikasjon'} · {selectedDifficulty === 'easy' ? 'Lett' : selectedDifficulty === 'medium' ? 'Middels' : 'Vanskelig'} {selectedOperation === 'mul' ? `· ${selectedTable ? `${selectedTable}-gangen` : 'Blandet'}` : ''}
                 </h2>
                 
                 <div className={`text-6xl font-bold text-white mb-8 transition-all duration-300 ${animation} relative`}>
@@ -1499,6 +1669,13 @@ const App = () => {
             fastestAnswer: 999999,
             dailyCorrect: 0,
             lastPlayDate: new Date().toDateString(),
+            operationStats: {
+                add: { correct: 0, total: 0 },
+                sub: { correct: 0, total: 0 },
+                mul: { correct: 0, total: 0 },
+                div: { correct: 0, total: 0 },
+                mixed: { correct: 0, total: 0 }
+            },
             tableStats: {
                 2: { correct: 0, total: 0 },
                 3: { correct: 0, total: 0 },
@@ -1528,6 +1705,13 @@ const App = () => {
             fastestAnswer: 999999, 
             dailyCorrect: 0, 
             lastPlayDate: new Date().toDateString(),
+            operationStats: {
+                add: { correct: 0, total: 0 },
+                sub: { correct: 0, total: 0 },
+                mul: { correct: 0, total: 0 },
+                div: { correct: 0, total: 0 },
+                mixed: { correct: 0, total: 0 }
+            },
             tableStats: {
                 2: { correct: 0, total: 0 },
                 3: { correct: 0, total: 0 },
@@ -1665,6 +1849,10 @@ const App = () => {
         }
     }, []);
 
+    const [selectedOperation, setSelectedOperation] = useState('mul');
+    const [selectedOperations, setSelectedOperations] = useState(['mul']);
+    const [selectedDifficulty, setSelectedDifficulty] = useState('easy');
+
     const handleStartGame = (table, gameMode = 'classic') => {
         setSelectedTable(table);
         setMode(gameMode === 'adventure' ? 'adventure' : 'normal');
@@ -1748,6 +1936,11 @@ const App = () => {
             const tableKey = selectedTable || 'mixed';
             const tableStats = prev.tableStats || {};
             const currentTableStats = tableStats[tableKey] || { correct: 0, total: 0 };
+            const opStats = prev.operationStats || { add:{correct:0,total:0}, sub:{correct:0,total:0}, mul:{correct:0,total:0}, div:{correct:0,total:0}, mixed:{correct:0,total:0} };
+            // bestem operasjon basert på currentQuestion (fra Game) finnes ikke her, så bruk selectedOperation/selectedOperations heuristikk
+            let op = (selectedOperations && selectedOperations.length > 1) ? 'mixed' : (selectedOperation || 'mul');
+            if (op !== 'mixed' && !['add','sub','mul','div'].includes(op)) op = 'mul';
+            const currOp = opStats[op] || { correct: 0, total: 0 };
             
             return {
                 ...prev,
@@ -1763,6 +1956,14 @@ const App = () => {
                     [tableKey]: {
                         correct: currentTableStats.correct + (isCorrect ? 1 : 0),
                         total: currentTableStats.total + 1
+                    }
+                },
+                // Oppdater per operasjon
+                operationStats: {
+                    ...opStats,
+                    [op]: {
+                        correct: currOp.correct + (isCorrect ? 1 : 0),
+                        total: currOp.total + 1
                     }
                 }
             };
@@ -2015,6 +2216,13 @@ const SOUNDS = {
                         onSwitchUser={() => setCurrentView('userSelect')}
                         onShowStats={() => setCurrentView('stats')}
                         onDeleteCurrentUser={handleDeleteCurrentUser}
+                        // pass operation/difficulty to menu for selection state
+                        selectedOperation={selectedOperation}
+                        setSelectedOperation={setSelectedOperation}
+                        selectedOperations={selectedOperations}
+                        setSelectedOperations={setSelectedOperations}
+                        selectedDifficulty={selectedDifficulty}
+                        setSelectedDifficulty={setSelectedDifficulty}
                         gangemon={gangemon}
                         activeGangemonId={activeGangemonId}
                         onSelectGangemon={handleSelectGangemon}
@@ -2029,6 +2237,9 @@ const SOUNDS = {
                 ) : (
                     <Game 
                         selectedTable={selectedTable}
+                        selectedOperation={selectedOperation}
+                        selectedOperations={selectedOperations}
+                        selectedDifficulty={selectedDifficulty}
                         onBackToMenu={handleBackToMenu}
                         onScoreUpdate={(points, isCorrect, answerTime, currentStreak) => {
                             setStreakForBadge(prev => {
