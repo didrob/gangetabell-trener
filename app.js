@@ -33,18 +33,18 @@ const POWER_UPS = [
     { id: "time", name: "Ekstra Tid", emoji: "⏰", duration: 0, cost: 40 }
 ];
 
-// Gangemon – V1 enkel liste (id, navn, emoji, sjeldenhet, unlockAt, optional table)
+// Gangemon – V2 med effektkart (id, navn, emoji, sjeldenhet, unlockAt, optional table, effects)
 const GANGEMON = [
-    { id: 'c1', name: 'Fire Dragon', emoji: '🐉', rarity: 'common', unlockAt: 0, table: 2 },
-    { id: 'c2', name: 'Aqua Turtle', emoji: '🐢', rarity: 'common', unlockAt: 0, table: 3 },
-    { id: 'c3', name: 'Earth Bear', emoji: '🐻', rarity: 'common', unlockAt: 0, table: 4 },
-    { id: 'r1', name: 'Flame Sprite', emoji: '🔥', rarity: 'rare', unlockAt: 15, table: 2 },
-    { id: 'r2', name: 'Wave Spirit', emoji: '🌊', rarity: 'rare', unlockAt: 30, table: 3 },
-    { id: 'r3', name: 'Mountain Giant', emoji: '⛰️', rarity: 'rare', unlockAt: 45, table: 4 },
-    { id: 'r4', name: 'Storm Cloud', emoji: '⛈️', rarity: 'rare', unlockAt: 60, table: 5 },
-    { id: 'l1', name: 'Star Emperor', emoji: '⭐', rarity: 'legendary', unlockAt: 90 },
-    { id: 'l2', name: 'Diamond King', emoji: '💎', rarity: 'legendary', unlockAt: 120 },
-    { id: 'm1', name: 'Phoenix', emoji: '🔥', rarity: 'mythical', unlockAt: 180 }
+    { id: 'c1', name: 'Fire Dragon', emoji: '🐉', rarity: 'common', unlockAt: 0, table: 2, effects: { scoreBonus: 0.05, streakBuffer: 1 } },
+    { id: 'c2', name: 'Aqua Turtle', emoji: '🐢', rarity: 'common', unlockAt: 0, table: 3, effects: { timeBonus: 5, hintRefund: 0.1 } },
+    { id: 'c3', name: 'Earth Bear', emoji: '🐻', rarity: 'common', unlockAt: 0, table: 4, effects: { scoreBonus: 0.03, streakBuffer: 2 } },
+    { id: 'r1', name: 'Flame Sprite', emoji: '🔥', rarity: 'rare', unlockAt: 15, table: 2, effects: { scoreBonus: 0.08, timeBonus: 3 } },
+    { id: 'r2', name: 'Wave Spirit', emoji: '🌊', rarity: 'rare', unlockAt: 30, table: 3, effects: { hintRefund: 0.2, streakBuffer: 1 } },
+    { id: 'r3', name: 'Mountain Giant', emoji: '⛰️', rarity: 'rare', unlockAt: 45, table: 4, effects: { scoreBonus: 0.06, timeBonus: 7 } },
+    { id: 'r4', name: 'Storm Cloud', emoji: '⛈️', rarity: 'rare', unlockAt: 60, table: 5, effects: { scoreBonus: 0.07, hintRefund: 0.15 } },
+    { id: 'l1', name: 'Star Emperor', emoji: '⭐', rarity: 'legendary', unlockAt: 90, effects: { scoreBonus: 0.12, timeBonus: 10, streakBuffer: 2 } },
+    { id: 'l2', name: 'Diamond King', emoji: '💎', rarity: 'legendary', unlockAt: 120, effects: { scoreBonus: 0.15, hintRefund: 0.25, timeBonus: 5 } },
+    { id: 'm1', name: 'Phoenix', emoji: '🔥', rarity: 'mythical', unlockAt: 180, effects: { scoreBonus: 0.2, timeBonus: 15, streakBuffer: 3, hintRefund: 0.3 } }
 ];
 
 // Evolusjonsnivåer
@@ -145,7 +145,20 @@ const getAvailableStickers = (score) => {
     return STICKERS.filter(sticker => score >= sticker.unlockScore);
 };
 
-// Gangemon-hjelpefunksjoner (temporarily removed)
+// Gangemon-hjelpefunksjoner
+const getGangemonById = (id) => {
+    return GANGEMON.find(g => g.id === id);
+};
+
+const getActiveGangemonEffects = (activeGangemonId) => {
+    if (!activeGangemonId) return {};
+    const gangemon = getGangemonById(activeGangemonId);
+    return gangemon?.effects || {};
+};
+
+const getAvailableGangemon = (ownedIds) => {
+    return GANGEMON.filter(g => ownedIds.includes(g.id));
+};
 
 const checkTrophies = (stats, newTrophies) => {
     const earned = [];
@@ -406,7 +419,167 @@ const Modal = ({ titleId = 'modal-title', onClose, children }) => {
     );
 };
 
-// Gangemon Collection komponent (temporarily removed)
+// Gangemon Selector komponent
+const GangemonSelector = ({ ownedGangemon, activeGangemonId, onSelectGangemon, onClose }) => {
+    const [selectedId, setSelectedId] = useState(activeGangemonId);
+    const modalRef = useRef(null);
+
+    useEffect(() => {
+        const handleKey = (e) => {
+            if (e.key === 'Escape') onClose && onClose();
+            if (e.key === 'Enter' && selectedId) {
+                onSelectGangemon(selectedId);
+                onClose();
+            }
+            // Tastaturnavigasjon med piltaster
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                const buttons = modalRef.current?.querySelectorAll('button[aria-pressed]');
+                if (!buttons || buttons.length === 0) return;
+                
+                const currentIndex = Array.from(buttons).findIndex(btn => btn.getAttribute('aria-pressed') === 'true');
+                let nextIndex = currentIndex;
+                
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                    nextIndex = (currentIndex + 1) % buttons.length;
+                } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                    nextIndex = currentIndex <= 0 ? buttons.length - 1 : currentIndex - 1;
+                }
+                
+                if (nextIndex !== currentIndex) {
+                    buttons[nextIndex].click();
+                    buttons[nextIndex].focus();
+                }
+            }
+        };
+        document.addEventListener('keydown', handleKey);
+        
+        // Sett initialt fokus
+        setTimeout(() => {
+            modalRef.current?.focus();
+        }, 0);
+        
+        return () => document.removeEventListener('keydown', handleKey);
+    }, [selectedId, onSelectGangemon, onClose]);
+
+    const availableGangemon = getAvailableGangemon(ownedGangemon);
+
+    const handleSelect = (id) => {
+        setSelectedId(id);
+    };
+
+    const handleConfirm = () => {
+        if (selectedId) {
+            onSelectGangemon(selectedId);
+            onClose();
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50" role="dialog" aria-modal="true" aria-labelledby="gangemon-selector-title" aria-describedby="gangemon-selector-description">
+            <div ref={modalRef} tabIndex={-1} className="bg-white/10 backdrop-blur-md rounded-2xl p-6 w-full max-w-4xl max-h-[80vh] overflow-y-auto outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-50">
+                <h2 id="gangemon-selector-title" className="text-3xl font-bold text-white mb-6 text-center">
+                    🎮 Velg Aktiv Gangemon
+                </h2>
+                <p id="gangemon-selector-description" className="text-white/80 text-center mb-6">
+                    Velg en Gangemon for å få bonus-effekter i spillet. Bruk piltastene for å navigere, Enter for å velge, og Escape for å lukke.
+                </p>
+                
+                {availableGangemon.length === 0 ? (
+                    <div className="text-center text-white py-8">
+                        <div className="text-6xl mb-4">🔒</div>
+                        <p className="text-xl">Du har ingen Gangemon ennå!</p>
+                        <p className="text-sm opacity-80 mt-2">Spill Adventure Mode for å samle Gangemon</p>
+                    </div>
+                ) : (
+                    <>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                            {availableGangemon.map(gangemon => {
+                                const isSelected = selectedId === gangemon.id;
+                                const isActive = activeGangemonId === gangemon.id;
+                                
+                                return (
+                                    <button
+                                        key={gangemon.id}
+                                        onClick={() => handleSelect(gangemon.id)}
+                                        className={`p-4 rounded-xl transition-all duration-200 text-left focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-50 ${
+                                            isSelected 
+                                                ? 'bg-yellow-400 text-black transform scale-105' 
+                                                : isActive
+                                                    ? 'bg-green-500 text-white'
+                                                    : 'bg-white/30 text-white hover:bg-white/50'
+                                        }`}
+                                        aria-pressed={isSelected}
+                                        aria-label={`Velg ${gangemon.name} som aktiv Gangemon`}
+                                    >
+                                        <div className="flex items-center gap-3 mb-2">
+                                            <span className="text-3xl">{gangemon.emoji}</span>
+                                            <div>
+                                                <h3 className="font-bold text-lg">{gangemon.name}</h3>
+                                                <div className={`inline-block px-2 py-1 rounded-full text-xs font-bold ${
+                                                    gangemon.rarity === 'common' ? 'bg-gray-500 text-white' :
+                                                    gangemon.rarity === 'rare' ? 'bg-blue-500 text-white' :
+                                                    gangemon.rarity === 'legendary' ? 'bg-purple-500 text-white' :
+                                                    'bg-yellow-500 text-black'
+                                                }`}>
+                                                    {gangemon.rarity.toUpperCase()}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Effekter */}
+                                        <div className="text-sm space-y-1">
+                                            {gangemon.effects.scoreBonus && (
+                                                <div>💎 +{Math.round(gangemon.effects.scoreBonus * 100)}% poeng</div>
+                                            )}
+                                            {gangemon.effects.timeBonus && (
+                                                <div>⏰ +{gangemon.effects.timeBonus}s tid</div>
+                                            )}
+                                            {gangemon.effects.streakBuffer && (
+                                                <div>🛡️ {gangemon.effects.streakBuffer} streak-buffer</div>
+                                            )}
+                                            {gangemon.effects.hintRefund && (
+                                                <div>💰 {Math.round(gangemon.effects.hintRefund * 100)}% hint-refund</div>
+                                            )}
+                                        </div>
+                                        
+                                        {isActive && (
+                                            <div className="text-xs font-bold mt-2 text-green-200">
+                                                ✅ AKTIV
+                                            </div>
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        
+                        <div className="flex gap-3 justify-center">
+                            <button
+                                onClick={handleConfirm}
+                                disabled={!selectedId}
+                                className={`px-6 py-3 rounded-xl font-bold transition-all duration-200 ${
+                                    selectedId 
+                                        ? 'bg-green-500 hover:bg-green-600 text-white' 
+                                        : 'bg-gray-500 text-white/50 cursor-not-allowed'
+                                }`}
+                                aria-label="Bekreft valg av Gangemon"
+                            >
+                                ✅ Velg Gangemon
+                            </button>
+                            <button
+                                onClick={onClose}
+                                className="px-6 py-3 rounded-xl font-bold transition-all duration-200 bg-red-500 hover:bg-red-600 text-white"
+                                aria-label="Lukk Gangemon-velger"
+                            >
+                                ❌ Lukk
+                            </button>
+                        </div>
+                    </>
+                )}
+            </div>
+        </div>
+    );
+};
 
 // Ny Gangemon Unlock komponent (temporarily removed)
 
@@ -622,7 +795,7 @@ const UserSelect = ({ onUserSelect, onNewUser }) => {
 };
 
 // FORENKLET StartMenu komponent
-const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, setIsMuted, currentAvatar, setCurrentAvatar, currentTheme, setCurrentTheme, powerUps, usePowerUp, dailyChallenge, soundVolume, setSoundVolume, soundType, setSoundType, soundFrequency, setSoundFrequency, playSfx, currentUser, onSwitchUser, onShowStats, onDeleteCurrentUser, badges, onShowBadges }) => {
+const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, setIsMuted, currentAvatar, setCurrentAvatar, currentTheme, setCurrentTheme, powerUps, usePowerUp, dailyChallenge, soundVolume, setSoundVolume, soundType, setSoundType, soundFrequency, setSoundFrequency, playSfx, currentUser, onSwitchUser, onShowStats, onDeleteCurrentUser, badges, onShowBadges, gangemon, activeGangemonId, onSelectGangemon }) => {
     const [gameMode, setGameMode] = useState(null); // 'classic' or 'adventure'
     const [selectedTable, setSelectedTable] = useState(null);
     const [showSettings, setShowSettings] = useState(false);
@@ -630,6 +803,7 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
     const [showThemeSelect, setShowThemeSelect] = useState(false);
     const [showSoundSelect, setShowSoundSelect] = useState(false);
     const [showPowerUps, setShowPowerUps] = useState(false);
+    const [showGangemonSelect, setShowGangemonSelect] = useState(false);
 
     const handleStart = () => {
         onStartGame(selectedTable, gameMode);
@@ -660,7 +834,7 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                             {currentLevel.emoji} {currentLevel.name} · <span className="font-bold">{score}</span> poeng
                         </p>
                         <p className="text-sm text-white/80">
-                            🎮 Gangemon system midlertidig deaktivert
+                            🎮 Gangemon: {activeGangemonId ? getGangemonById(activeGangemonId)?.emoji + ' ' + getGangemonById(activeGangemonId)?.name : 'Ingen valgt'} ({gangemon.length} samlet)
                         </p>
                     </div>
                 </div>
@@ -846,7 +1020,13 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                 >
                     📊
                 </button>
-                {/* Gangemon button temporarily removed */}
+                <button aria-label="Åpne Gangemon-velger"
+                    onClick={() => setShowGangemonSelect(true)}
+                    className="p-3 rounded-xl text-white font-bold transition-all duration-200 bg-purple-500 hover:bg-purple-600"
+                    title="Gangemon"
+                >
+                    🎮
+                </button>
                 <button aria-label="Åpne badges"
                     onClick={onShowBadges}
                     className="p-3 rounded-xl text-white font-bold transition-all duration-200 bg-yellow-500 hover:bg-yellow-600"
@@ -891,7 +1071,12 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                 >
                     📊 Statistikk
                 </button>
-                {/* Gangemon button temporarily removed */}
+                <button
+                    onClick={() => setShowGangemonSelect(true)}
+                    className="p-2 rounded-lg text-white font-bold transition-all duration-200 bg-purple-500 hover:bg-purple-600"
+                >
+                    🎮 Gangemon
+                </button>
                 <button
                     onClick={onShowBadges}
                     className="p-2 rounded-lg text-white font-bold transition-all duration-200 bg-yellow-500 hover:bg-yellow-600"
@@ -1045,13 +1230,23 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                 </div>
             )}
 
+            {/* Gangemon Selector */}
+            {showGangemonSelect && (
+                <GangemonSelector
+                    ownedGangemon={gangemon}
+                    activeGangemonId={activeGangemonId}
+                    onSelectGangemon={onSelectGangemon}
+                    onClose={() => setShowGangemonSelect(false)}
+                />
+            )}
+
         </div>
     );
 };
 
 
 // Spill komponent
-const Game = ({ selectedTable, onBackToMenu, onScoreUpdate, onGameOver, mode = 'normal', playSfx, triggerConfetti, powerUps, usePowerUp }) => {
+const Game = ({ selectedTable, onBackToMenu, onScoreUpdate, onGameOver, mode = 'normal', playSfx, triggerConfetti, powerUps, usePowerUp, activeGangemonId }) => {
     const [currentQuestion, setCurrentQuestion] = useState(null);
     const [answers, setAnswers] = useState([]);
     const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -1059,6 +1254,7 @@ const Game = ({ selectedTable, onBackToMenu, onScoreUpdate, onGameOver, mode = '
     const [animation, setAnimation] = useState('');
     const [showCorrectAnimation, setShowCorrectAnimation] = useState(false);
     const [streak, setStreak] = useState(0);
+    const [streakBuffer, setStreakBuffer] = useState(0);
     const [timeLeft, setTimeLeft] = useState(60);
     const intervalRef = useRef(null);
     const [totalCount, setTotalCount] = useState(0);
@@ -1067,7 +1263,11 @@ const Game = ({ selectedTable, onBackToMenu, onScoreUpdate, onGameOver, mode = '
     useEffect(() => {
         generateNewQuestion();
         if (mode === 'rush') {
-            setTimeLeft(60);
+            // Gangemon timeBonus: legg til ekstra tid basert på aktiv Gangemon
+            const effects = getActiveGangemonEffects(activeGangemonId);
+            const timeBonus = effects.timeBonus || 0;
+            setTimeLeft(60 + timeBonus);
+            
             intervalRef.current = setInterval(() => {
                 setTimeLeft(prev => {
                     if (prev <= 1) {
@@ -1122,7 +1322,21 @@ const Game = ({ selectedTable, onBackToMenu, onScoreUpdate, onGameOver, mode = '
         } else {
             setFeedback(`❌ Feil svar. Riktig svar er ${currentQuestion.answer}. Prøv igjen!`);
             setAnimation('animate-shake');
-            setStreak(0);
+            
+            // Streak-buffer: bruk buffer før streak går til 0
+            const effects = getActiveGangemonEffects(activeGangemonId);
+            const bufferAmount = effects.streakBuffer || 0;
+            
+            if (streakBuffer > 0) {
+                setStreakBuffer(prev => prev - 1);
+                setFeedback(`❌ Feil svar. Riktig svar er ${currentQuestion.answer}. Streak-buffer brukt! (${streakBuffer - 1} igjen)`);
+            } else if (bufferAmount > 0) {
+                setStreakBuffer(bufferAmount - 1);
+                setFeedback(`❌ Feil svar. Riktig svar er ${currentQuestion.answer}. Streak-buffer aktivert! (${bufferAmount - 1} igjen)`);
+            } else {
+                setStreak(0);
+            }
+            
             playSfx('wrong');
             onScoreUpdate(0, false);
             
@@ -1148,7 +1362,7 @@ const Game = ({ selectedTable, onBackToMenu, onScoreUpdate, onGameOver, mode = '
                     {mode === 'rush' && (
                         <span>⏱️ {timeLeft}s</span>
                     )}
-                    <span>🔥 Streak: {streak}</span>
+                    <span>🔥 Streak: {streak}{streakBuffer > 0 && ` (Buffer: ${streakBuffer})`}</span>
                 </div>
             </div>
 
@@ -1267,6 +1481,8 @@ const App = () => {
     const [pendingGangemon, setPendingGangemon] = useState([]); // queue for modal
     const [showNewGangemon, setShowNewGangemon] = useState(false);
     const [showBadgeCollection, setShowBadgeCollection] = useState(false);
+    // Aktiv Gangemon (V2 – trinn 1): lagre aktiv id
+    const [activeGangemonId, setActiveGangemonId] = useState(null);
     
     // Nye state for alle funksjoner
     const [currentAvatar, setCurrentAvatar] = useState(AVATARS[0]);
@@ -1329,6 +1545,7 @@ const App = () => {
         // Gangemon V1: load owned and pending if present
         setGangemon(Array.isArray(data.gangemon) ? data.gangemon : []);
         setPendingGangemon(Array.isArray(data.pendingGangemon) ? data.pendingGangemon : []);
+        setActiveGangemonId(data.activeGangemonId || null);
         setDailyChallenge(getDailyChallenge());
         setCurrentView('menu');
     };
@@ -1345,7 +1562,8 @@ const App = () => {
                 stats,
                 badges,
                 gangemon,
-                pendingGangemon
+                pendingGangemon,
+                activeGangemonId
             };
             saveUserData(currentUser, updatedData);
             setUserData(updatedData);
@@ -1480,7 +1698,12 @@ const App = () => {
         const powerUp = POWER_UPS.find(p => p.id === powerUpId);
         if (!powerUp || score < powerUp.cost) return;
 
-        setScore(prev => prev - powerUp.cost);
+        // Gangemon hint-refund: reduser kostnad basert på aktiv Gangemon
+        const effects = getActiveGangemonEffects(activeGangemonId);
+        const refundRate = effects.hintRefund || 0;
+        const actualCost = Math.round(powerUp.cost * (1 - refundRate));
+
+        setScore(prev => prev - actualCost);
         
         if (powerUpId === 'double') {
             setPowerUps(prev => ({
@@ -1506,6 +1729,14 @@ const App = () => {
         // 2x poeng power-up
         if (powerUps?.double?.active && Date.now() < (powerUps?.double?.endTime || 0)) {
             finalPoints *= 2;
+        }
+
+        // Aktiv Gangemon: bruk effekter fra effektkart
+        if (isCorrect && activeGangemonId) {
+            const effects = getActiveGangemonEffects(activeGangemonId);
+            if (effects.scoreBonus) {
+                finalPoints = Math.round(finalPoints * (1 + effects.scoreBonus));
+            }
         }
 
         const newScore = score + finalPoints;
@@ -1737,6 +1968,10 @@ const SOUNDS = {
         setShowBadgeCollection(false);
     };
 
+    const handleSelectGangemon = (gangemonId) => {
+        setActiveGangemonId(gangemonId);
+    };
+
     return (
         <div className={`min-h-screen flex items-center justify-center ${currentTheme.class}`}>
             <div className="w-full max-w-4xl">
@@ -1780,7 +2015,9 @@ const SOUNDS = {
                         onSwitchUser={() => setCurrentView('userSelect')}
                         onShowStats={() => setCurrentView('stats')}
                         onDeleteCurrentUser={handleDeleteCurrentUser}
-                        // Gangemon props temporarily removed
+                        gangemon={gangemon}
+                        activeGangemonId={activeGangemonId}
+                        onSelectGangemon={handleSelectGangemon}
                         badges={badges}
                         onShowBadges={handleShowBadges}
                     />
@@ -1813,6 +2050,7 @@ const SOUNDS = {
                         triggerConfetti={triggerConfetti}
                         powerUps={powerUps}
                         usePowerUp={usePowerUp}
+                        activeGangemonId={activeGangemonId}
                     />
                 )}
                 
