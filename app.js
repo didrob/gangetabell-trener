@@ -1450,10 +1450,11 @@ const Game = ({ selectedTable, selectedOperation = 'mul', selectedDifficulty = '
                 <div className="flex items-center gap-3">
                     <button
                         onClick={onBackToMenu}
-                        className="bg-red-500 hover:bg-red-600 text-white text-xl font-bold py-3 px-6 rounded-2xl transition-all duration-200 transform hover:scale-105 shadow-lg"
+                        className="bg-red-600 hover:bg-red-700 text-white text-2xl font-extrabold py-3 px-7 rounded-2xl transition-all duration-200 transform hover:scale-105 shadow-2xl focus:outline-none focus:ring-4 focus:ring-white/70"
                         aria-label="Tilbake til meny (Esc)"
+                        title="Tilbake til meny"
                     >
-                        ← Tilbake
+                        ⬅️ TILBAKE
                     </button>
                     <span className="text-white/70 hidden md:inline text-sm">Esc</span>
                 </div>
