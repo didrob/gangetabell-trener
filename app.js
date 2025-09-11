@@ -1267,6 +1267,8 @@ const App = () => {
     const [pendingGangemon, setPendingGangemon] = useState([]); // queue for modal
     const [showNewGangemon, setShowNewGangemon] = useState(false);
     const [showBadgeCollection, setShowBadgeCollection] = useState(false);
+    // Aktiv Gangemon (V2 – trinn 1): lagre aktiv id
+    const [activeGangemonId, setActiveGangemonId] = useState(null);
     
     // Nye state for alle funksjoner
     const [currentAvatar, setCurrentAvatar] = useState(AVATARS[0]);
@@ -1329,6 +1331,7 @@ const App = () => {
         // Gangemon V1: load owned and pending if present
         setGangemon(Array.isArray(data.gangemon) ? data.gangemon : []);
         setPendingGangemon(Array.isArray(data.pendingGangemon) ? data.pendingGangemon : []);
+        setActiveGangemonId(data.activeGangemonId || null);
         setDailyChallenge(getDailyChallenge());
         setCurrentView('menu');
     };
@@ -1345,7 +1348,8 @@ const App = () => {
                 stats,
                 badges,
                 gangemon,
-                pendingGangemon
+                pendingGangemon,
+                activeGangemonId
             };
             saveUserData(currentUser, updatedData);
             setUserData(updatedData);
@@ -1506,6 +1510,12 @@ const App = () => {
         // 2x poeng power-up
         if (powerUps?.double?.active && Date.now() < (powerUps?.double?.endTime || 0)) {
             finalPoints *= 2;
+        }
+
+        // Aktiv Gangemon: +5% poeng bonus (kun ved riktig svar)
+        if (isCorrect && activeGangemonId) {
+            // enkel første versjon: alle aktive gir +5%
+            finalPoints = Math.round(finalPoints * 1.05);
         }
 
         const newScore = score + finalPoints;
