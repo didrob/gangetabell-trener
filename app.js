@@ -33,6 +33,28 @@ const POWER_UPS = [
     { id: "time", name: "Ekstra Tid", emoji: "⏰", duration: 0, cost: 40 }
 ];
 
+// Gangemon – V1 enkel liste (id, navn, emoji, sjeldenhet, unlockAt, optional table)
+const GANGEMON = [
+    { id: 'c1', name: 'Fire Dragon', emoji: '🐉', rarity: 'common', unlockAt: 0, table: 2 },
+    { id: 'c2', name: 'Aqua Turtle', emoji: '🐢', rarity: 'common', unlockAt: 0, table: 3 },
+    { id: 'c3', name: 'Earth Bear', emoji: '🐻', rarity: 'common', unlockAt: 0, table: 4 },
+    { id: 'r1', name: 'Flame Sprite', emoji: '🔥', rarity: 'rare', unlockAt: 15, table: 2 },
+    { id: 'r2', name: 'Wave Spirit', emoji: '🌊', rarity: 'rare', unlockAt: 30, table: 3 },
+    { id: 'r3', name: 'Mountain Giant', emoji: '⛰️', rarity: 'rare', unlockAt: 45, table: 4 },
+    { id: 'r4', name: 'Storm Cloud', emoji: '⛈️', rarity: 'rare', unlockAt: 60, table: 5 },
+    { id: 'l1', name: 'Star Emperor', emoji: '⭐', rarity: 'legendary', unlockAt: 90 },
+    { id: 'l2', name: 'Diamond King', emoji: '💎', rarity: 'legendary', unlockAt: 120 },
+    { id: 'm1', name: 'Phoenix', emoji: '🔥', rarity: 'mythical', unlockAt: 180 }
+];
+
+// Evolusjonsnivåer
+const EVOLUTION_LEVELS = [
+    { name: "Bronze", emoji: "🥉", minScore: 0, color: "bg-orange-600" },
+    { name: "Silver", emoji: "🥈", minScore: 100, color: "bg-gray-400" },
+    { name: "Gold", emoji: "🥇", minScore: 300, color: "bg-yellow-400" },
+    { name: "Diamond", emoji: "💎", minScore: 600, color: "bg-blue-400" }
+];
+
 // Klistremerker
 const STICKERS = [
     { id: "star", emoji: "⭐", name: "Stjerne", unlockScore: 0 },
@@ -63,6 +85,10 @@ const getUserData = (userName) => {
 
 const saveUserData = (userName, data) => {
     localStorage.setItem(`gangetabell-user-${userName}`, JSON.stringify(data));
+};
+
+const deleteUserData = (userName) => {
+    localStorage.removeItem(`gangetabell-user-${userName}`);
 };
 
 const getAllUsers = () => {
@@ -118,6 +144,8 @@ const getAvailableAvatars = (score) => {
 const getAvailableStickers = (score) => {
     return STICKERS.filter(sticker => score >= sticker.unlockScore);
 };
+
+// Gangemon-hjelpefunksjoner (temporarily removed)
 
 const checkTrophies = (stats, newTrophies) => {
     const earned = [];
@@ -231,12 +259,12 @@ const StatsOverview = ({ stats, onBack }) => {
             </div>
 
             {/* Anbefaling */}
-            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4 mb-6">
+            <div className="bg-white/30 backdrop-blur-sm rounded-2xl p-4 mb-6">
                 <p className="text-lg text-white font-bold">{getRecommendation()}</p>
             </div>
 
             {/* Blandet statistikk */}
-            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 mb-6">
+            <div className="bg-white/30 backdrop-blur-sm rounded-2xl p-6 mb-6">
                 <h2 className="text-2xl font-bold text-white mb-4">🎲 Blandet oppgaver</h2>
                 <div className="flex items-center justify-center gap-4">
                     <div className="text-4xl font-bold text-white">
@@ -255,7 +283,7 @@ const StatsOverview = ({ stats, onBack }) => {
             </div>
 
             {/* Gangetabell statistikk */}
-            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6">
+            <div className="bg-white/30 backdrop-blur-sm rounded-2xl p-6">
                 <h2 className="text-2xl font-bold text-white mb-6">📈 Gangetabell oversikt</h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                     {tableStats.map(({ table, correct, total, percentage }) => (
@@ -333,6 +361,134 @@ const ConfettiLayer = ({ burst }) => {
     );
 };
 
+// Tilgjengelig Modal-komponent (ESC-lukk, fokusfelle, ARIA)
+const Modal = ({ titleId = 'modal-title', onClose, children }) => {
+    const modalRef = React.useRef(null);
+
+    useEffect(() => {
+        const handleKey = (e) => {
+            if (e.key === 'Escape') onClose && onClose();
+            if (e.key === 'Tab' && modalRef.current) {
+                const focusables = modalRef.current.querySelectorAll(
+                    'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
+                );
+                if (focusables.length === 0) return;
+                const first = focusables[0];
+                const last = focusables[focusables.length - 1];
+                if (e.shiftKey && document.activeElement === first) {
+                    e.preventDefault();
+                    last.focus();
+                } else if (!e.shiftKey && document.activeElement === last) {
+                    e.preventDefault();
+                    first.focus();
+                }
+            }
+        };
+        document.addEventListener('keydown', handleKey);
+        // sett initialt fokus
+        setTimeout(() => {
+            modalRef.current?.focus();
+        }, 0);
+        return () => document.removeEventListener('keydown', handleKey);
+    }, [onClose]);
+
+    return (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50" role="dialog" aria-modal="true" aria-labelledby={titleId}>
+            <div ref={modalRef} tabIndex={-1} className="bg-white/10 backdrop-blur-md rounded-2xl p-6 w-full max-w-md outline-none">
+                {children}
+                <div className="mt-4 text-right">
+                    <button onClick={onClose} className="bg-white text-purple-700 px-4 py-2 rounded-xl font-bold hover:bg-gray-100" aria-label="Lukk dialog">
+                        Lukk
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// Gangemon Collection komponent (temporarily removed)
+
+// Ny Gangemon Unlock komponent (temporarily removed)
+
+// Badge Collection komponent
+const BadgeCollection = ({ badges, onClose }) => {
+    const allBadges = [
+        { id: '5-paa-rad', name: '5 på rad', emoji: '🔥', description: 'Få 5 riktige svar på rad', color: 'bg-green-500' },
+        { id: '10-paa-rad', name: '10 på rad', emoji: '⚡', description: 'Få 10 riktige svar på rad', color: 'bg-blue-500' },
+        { id: '20-paa-rad', name: '20 på rad', emoji: '🌟', description: 'Få 20 riktige svar på rad', color: 'bg-purple-500' },
+        { id: '100-poeng', name: '100 poeng', emoji: '💯', description: 'Oppnå 100 poeng totalt', color: 'bg-yellow-500' },
+        { id: '500-poeng', name: '500 poeng', emoji: '🏆', description: 'Oppnå 500 poeng totalt', color: 'bg-orange-500' },
+        { id: '1000-poeng', name: '1000 poeng', emoji: '👑', description: 'Oppnå 1000 poeng totalt', color: 'bg-red-500' },
+        { id: 'speed-demon', name: 'Speed Demon', emoji: '⚡', description: 'Svar riktig på under 2 sekunder', color: 'bg-indigo-500' },
+        { id: 'perfectionist', name: 'Perfeksjonist', emoji: '💎', description: 'Få 100% riktig i en runde', color: 'bg-pink-500' },
+        { id: 'daily-warrior', name: 'Daglig Kriger', emoji: '🗡️', description: 'Fullfør daglig utfordring', color: 'bg-teal-500' },
+        // { id: 'gangemon-master', name: 'Gangemon Mester', emoji: '🎮', description: 'Samle alle Gangemon', color: 'bg-cyan-500' } // temporarily removed
+    ];
+    
+    return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-3xl font-bold text-white">🏅 Badge Collection</h2>
+                    <button
+                        onClick={onClose}
+                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl font-bold"
+                    >
+                        ✕ Lukk
+                    </button>
+                </div>
+                
+                {/* Badge grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {allBadges.map(badge => {
+                        const isEarned = badges.includes(badge.id);
+                        
+                        return (
+                            <div
+                                key={badge.id}
+                                className={`p-4 rounded-xl transition-all duration-200 ${
+                                    isEarned 
+                                        ? 'bg-white/30 hover:bg-white/40' 
+                                        : 'bg-white/10 opacity-50'
+                                }`}
+                            >
+                                <div className="text-center">
+                                    <div className="text-4xl mb-2">{isEarned ? badge.emoji : '🔒'}</div>
+                                    <h4 className="font-bold text-white text-sm mb-1">
+                                        {isEarned ? badge.name : '???'}
+                                    </h4>
+                                    <div className={`inline-block px-2 py-1 rounded-full text-xs font-bold text-white ${badge.color}`}>
+                                        {isEarned ? 'OPPNÅDD' : 'LÅST'}
+                                    </div>
+                                    {isEarned && (
+                                        <p className="text-xs text-white/80 mt-2">{badge.description}</p>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+                
+                {/* Progress summary */}
+                <div className="mt-6 bg-white/20 rounded-xl p-4">
+                    <h3 className="text-xl font-bold text-white mb-2">Fremgang</h3>
+                    <div className="flex items-center gap-3">
+                        <div className="flex-1 bg-white/20 rounded-full h-4">
+                            <div 
+                                className="bg-gradient-to-r from-green-400 to-blue-500 h-4 rounded-full transition-all duration-500"
+                                style={{ width: `${(badges.length / allBadges.length) * 100}%` }}
+                            ></div>
+                        </div>
+                        <span className="text-white font-bold">
+                            {badges.length} / {allBadges.length}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 // Brukervalg komponent
 const UserSelect = ({ onUserSelect, onNewUser }) => {
     const [users, setUsers] = useState([]);
@@ -342,6 +498,17 @@ const UserSelect = ({ onUserSelect, onNewUser }) => {
     useEffect(() => {
         setUsers(getAllUsers());
     }, []);
+
+    const handleDeleteUser = (userName) => {
+        if (!userName) return;
+        if (!confirm(`Slette bruker "${userName}"? Dette kan ikke angres.`)) return;
+        deleteUserData(userName);
+        const current = getCurrentUser();
+        if (current === userName) {
+            localStorage.removeItem('gangetabell-current-user');
+        }
+        setUsers(getAllUsers());
+    };
 
     const handleNewUser = () => {
         if (newUserName.trim()) {
@@ -357,6 +524,8 @@ const UserSelect = ({ onUserSelect, onNewUser }) => {
                 powerUps: normalizePowerUps(),
                 stickers: [],
                 trophies: [],
+                // gangemon temporarily removed
+                badges: [],
                 stats: {
                     totalCorrect: 0,
                     totalWrong: 0,
@@ -383,10 +552,10 @@ const UserSelect = ({ onUserSelect, onNewUser }) => {
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4 mb-6">
                     {users.map(user => (
+                        <div key={user.name} className="flex items-center gap-2">
                         <button
-                            key={user.name}
                             onClick={() => onUserSelect(user.name, user)}
-                            className="bg-white/30 hover:bg-white/50 active:bg-white/60 text-white p-4 rounded-xl transition-all duration-200 text-left touch-target"
+                                className="flex-1 bg-white/30 hover:bg-white/50 active:bg-white/60 text-white p-4 rounded-xl transition-all duration-200 text-left touch-target"
                         >
                             <div className="flex items-center gap-3">
                                 <span className="text-2xl md:text-3xl">{user.currentAvatar?.emoji || '👤'}</span>
@@ -398,6 +567,15 @@ const UserSelect = ({ onUserSelect, onNewUser }) => {
                                 </div>
                             </div>
                         </button>
+                            <button
+                                onClick={() => handleDeleteUser(user.name)}
+                                className="bg-red-500 hover:bg-red-600 active:bg-red-700 text-white p-3 rounded-xl font-bold"
+                                title="Slett bruker"
+                                aria-label={`Slett ${user.name}`}
+                            >
+                                🗑️
+                            </button>
+                        </div>
                     ))}
                 </div>
 
@@ -444,7 +622,8 @@ const UserSelect = ({ onUserSelect, onNewUser }) => {
 };
 
 // FORENKLET StartMenu komponent
-const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, setIsMuted, currentAvatar, setCurrentAvatar, currentTheme, setCurrentTheme, powerUps, usePowerUp, dailyChallenge, soundVolume, setSoundVolume, soundType, setSoundType, soundFrequency, setSoundFrequency, playSfx, currentUser, onSwitchUser, onShowStats }) => {
+const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, setIsMuted, currentAvatar, setCurrentAvatar, currentTheme, setCurrentTheme, powerUps, usePowerUp, dailyChallenge, soundVolume, setSoundVolume, soundType, setSoundType, soundFrequency, setSoundFrequency, playSfx, currentUser, onSwitchUser, onShowStats, onDeleteCurrentUser, badges, onShowBadges }) => {
+    const [gameMode, setGameMode] = useState(null); // 'classic' or 'adventure'
     const [selectedTable, setSelectedTable] = useState(null);
     const [showSettings, setShowSettings] = useState(false);
     const [showAvatarSelect, setShowAvatarSelect] = useState(false);
@@ -453,8 +632,14 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
     const [showPowerUps, setShowPowerUps] = useState(false);
 
     const handleStart = () => {
-        onStartGame(selectedTable);
+        onStartGame(selectedTable, gameMode);
     };
+
+    // Reset gameMode when component mounts (when returning from game)
+    useEffect(() => {
+        setGameMode(null);
+        setSelectedTable(null);
+    }, []);
 
     const availableAvatars = getAvailableAvatars(score);
 
@@ -468,11 +653,14 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
             {/* Brukerinfo - kompakt */}
             <div className="flex items-center justify-center gap-4 mb-8">
                 <div className="flex items-center gap-3">
-                    <span className="text-3xl">{currentAvatar.emoji}</span>
+                    <span className="text-3xl animate-float">{currentAvatar.emoji}</span>
                     <div className="text-left">
                         <p className="text-lg text-white font-bold">{currentUser || 'Bruker'}</p>
                         <p className="text-base text-white">
                             {currentLevel.emoji} {currentLevel.name} · <span className="font-bold">{score}</span> poeng
+                        </p>
+                        <p className="text-sm text-white/80">
+                            🎮 Gangemon system midlertidig deaktivert
                         </p>
                     </div>
                 </div>
@@ -498,12 +686,22 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                     >
                         👤
                 </button>
+                    {currentUser && (
+                        <button
+                            onClick={onDeleteCurrentUser}
+                            className="px-3 py-2 rounded-lg text-white font-bold transition-all duration-200 bg-red-600 hover:bg-red-700"
+                            aria-label="Slett nåværende bruker"
+                            title="Slett nåværende bruker"
+                        >
+                            🗑️
+                        </button>
+                    )}
                 </div>
             </div>
 
             {/* Daglig utfordring - kompakt */}
             {dailyChallenge && !dailyChallenge.completed && (
-                <div className="bg-yellow-500/20 backdrop-blur-sm rounded-xl p-3 mb-6 text-white">
+                <div className="bg-yellow-500/30 backdrop-blur-sm rounded-xl p-3 mb-6 text-white">
                     <div className="flex items-center justify-between">
                         <div className="text-left">
                             <p className="text-sm font-bold">🎯 {dailyChallenge.name}</p>
@@ -519,9 +717,50 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                 </div>
             )}
 
-            {/* Tabell valg - hovedfokus */}
+            {/* Spillmodus valg */}
+            {!gameMode && (
+                <div className="mb-8">
+                    <h2 className="text-2xl font-bold text-white mb-6">Velg spillmodus</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+                        {/* Klassisk Modus */}
+                        <button
+                            onClick={() => setGameMode('classic')}
+                            className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 text-white hover:bg-white/30 transition-all duration-200 hover:scale-105"
+                        >
+                            <div className="text-4xl mb-3">📚</div>
+                            <h3 className="text-xl font-bold mb-2">Klassisk Modus</h3>
+                            <p className="text-sm text-white/80">
+                                Tradisjonell gangetabell-trening. Velg en spesifikk tabell eller blandet oppgaver.
+                            </p>
+                        </button>
+                        
+                        {/* Adventure Modus */}
+                        <button
+                            onClick={() => setGameMode('adventure')}
+                            className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 text-white hover:bg-white/30 transition-all duration-200 hover:scale-105"
+                        >
+                            <div className="text-4xl mb-3">🎮</div>
+                            <h3 className="text-xl font-bold mb-2">Adventure Modus</h3>
+                            <p className="text-sm text-white/80">
+                                Samle Gangemon, bruk power-ups og fullfør daglige utfordringer!
+                            </p>
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Tabell valg - kun vis hvis spillmodus er valgt */}
+            {gameMode && (
             <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 mb-8">
-                <h2 className="text-2xl font-bold text-white mb-6">Velg tabell:</h2>
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-2xl font-bold text-white">Velg tabell:</h2>
+                        <button
+                            onClick={() => setGameMode(null)}
+                            className="text-white/80 hover:text-white text-sm"
+                        >
+                            ← Tilbake til modus
+                        </button>
+                    </div>
                 <div className="grid grid-cols-5 gap-3 mb-4">
                     {[2, 3, 4, 5, 6, 7, 8, 9, 10].map(table => (
                         <button
@@ -548,59 +787,72 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                     🎲 Blandet
                 </button>
             </div>
+            )}
 
-            {/* Start knapper - hovedhandling */}
+            {/* Start knapper - kun vis hvis spillmodus og tabell er valgt */}
+            {gameMode && (
             <div className="flex flex-col md:flex-row items-center justify-center gap-4 mb-8">
                 <button
                     onClick={handleStart}
                     className="bg-green-500 hover:bg-green-600 text-white text-2xl md:text-3xl font-bold py-4 md:py-6 px-8 md:px-12 rounded-2xl transition-all duration-200 transform hover:scale-105 shadow-2xl w-full md:w-auto"
                 >
-                    🚀 START SPILL
+                        🚀 START {gameMode === 'classic' ? 'KLASSISK' : 'ADVENTURE'}
                 </button>
+                    {gameMode === 'adventure' && (
                 <button
                     onClick={() => onStartRush(selectedTable)}
                     className="bg-orange-500 hover:bg-orange-600 text-white text-xl md:text-2xl font-bold py-3 md:py-4 px-6 md:px-8 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-xl w-full md:w-auto"
                 >
                     ⏱️ Rush 60s
                 </button>
+                    )}
             </div>
+            )}
 
             {/* Kompakt navigasjon */}
             <div className="flex justify-center gap-3">
-                <button
+                <button aria-label="Åpne avatarvalg"
                     onClick={() => setShowAvatarSelect(!showAvatarSelect)}
                     className="p-3 rounded-xl text-white font-bold transition-all duration-200 bg-blue-500 hover:bg-blue-600"
                     title="Avatars"
                 >
                     👤
                 </button>
-                <button
+                <button aria-label="Åpne temavelger"
                     onClick={() => setShowThemeSelect(!showThemeSelect)}
                     className="p-3 rounded-xl text-white font-bold transition-all duration-200 bg-green-500 hover:bg-green-600"
                     title="Temaer"
                 >
                     🎨
                 </button>
-                <button
+                <button aria-label="Åpne power-ups"
                     onClick={() => setShowPowerUps(!showPowerUps)}
                     className="p-3 rounded-xl text-white font-bold transition-all duration-200 bg-purple-500 hover:bg-purple-600"
                     title="Power-ups"
                 >
                     ⚡
                 </button>
-                <button
+                <button aria-label="Åpne lydinnstillinger"
                     onClick={() => setShowSoundSelect(!showSoundSelect)}
                     className="p-3 rounded-xl text-white font-bold transition-all duration-200 bg-pink-500 hover:bg-pink-600"
                     title="Lyd"
                 >
                     🎵
                 </button>
-                <button
+                <button aria-label="Åpne statistikk"
                     onClick={onShowStats}
                     className="p-3 rounded-xl text-white font-bold transition-all duration-200 bg-indigo-500 hover:bg-indigo-600"
                     title="Statistikk"
                 >
                     📊
+                </button>
+                {/* Gangemon button temporarily removed */}
+                <button aria-label="Åpne badges"
+                    onClick={onShowBadges}
+                    className="p-3 rounded-xl text-white font-bold transition-all duration-200 bg-yellow-500 hover:bg-yellow-600"
+                    title="Badge Collection"
+                >
+                    🏅
                 </button>
             </div>
 
@@ -638,6 +890,13 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                     className="p-2 rounded-lg text-white font-bold transition-all duration-200 bg-indigo-500 hover:bg-indigo-600"
                 >
                     📊 Statistikk
+                </button>
+                {/* Gangemon button temporarily removed */}
+                <button
+                    onClick={onShowBadges}
+                    className="p-2 rounded-lg text-white font-bold transition-all duration-200 bg-yellow-500 hover:bg-yellow-600"
+                >
+                    🏅 Badges
                 </button>
             </div>
                 </div>
@@ -792,12 +1051,13 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
 
 
 // Spill komponent
-const Game = ({ selectedTable, onBackToMenu, onScoreUpdate, onGameOver, mode = 'normal', playSfx, triggerConfetti, powerUps }) => {
+const Game = ({ selectedTable, onBackToMenu, onScoreUpdate, onGameOver, mode = 'normal', playSfx, triggerConfetti, powerUps, usePowerUp }) => {
     const [currentQuestion, setCurrentQuestion] = useState(null);
     const [answers, setAnswers] = useState([]);
     const [selectedAnswer, setSelectedAnswer] = useState(null);
     const [feedback, setFeedback] = useState('');
     const [animation, setAnimation] = useState('');
+    const [showCorrectAnimation, setShowCorrectAnimation] = useState(false);
     const [streak, setStreak] = useState(0);
     const [timeLeft, setTimeLeft] = useState(60);
     const intervalRef = useRef(null);
@@ -845,25 +1105,29 @@ const Game = ({ selectedTable, onBackToMenu, onScoreUpdate, onGameOver, mode = '
         if (answer === currentQuestion.answer) {
             const answerTime = Date.now() - startTime;
             setFeedback('🎉 Riktig! Fantastisk jobb!');
-            setAnimation('bounce-animation');
+            setAnimation('animate-bounce-in');
+            setShowCorrectAnimation(true);
             const newStreak = streak + 1;
             setStreak(newStreak);
-            onScoreUpdate(10 + (newStreak * 2), true, answerTime);
+            onScoreUpdate(10 + (newStreak * 2), true, answerTime, newStreak);
             playSfx('correct');
             triggerConfetti();
             setCorrectCount(c => c + 1);
             
             setTimeout(() => {
+                setShowCorrectAnimation(false);
+                setAnimation('');
                 generateNewQuestion();
             }, 1500);
         } else {
             setFeedback(`❌ Feil svar. Riktig svar er ${currentQuestion.answer}. Prøv igjen!`);
-            setAnimation('shake-animation');
+            setAnimation('animate-shake');
             setStreak(0);
             playSfx('wrong');
             onScoreUpdate(0, false);
             
             setTimeout(() => {
+                setAnimation('');
                 generateNewQuestion();
             }, 2000);
         }
@@ -876,9 +1140,9 @@ const Game = ({ selectedTable, onBackToMenu, onScoreUpdate, onGameOver, mode = '
             <div className="flex justify-between items-center mb-8">
                 <button
                     onClick={onBackToMenu}
-                    className="bg-red-500 hover:bg-red-600 text-white text-xl font-bold py-3 px-6 rounded-2xl transition-all duration-200"
+                    className="bg-red-500 hover:bg-red-600 text-white text-xl font-bold py-3 px-6 rounded-2xl transition-all duration-200 transform hover:scale-105 shadow-lg"
                 >
-                    ← Tilbake
+                    ← Tilbake til meny
                 </button>
                 <div className="flex items-center gap-4 text-white text-xl">
                     {mode === 'rush' && (
@@ -888,13 +1152,70 @@ const Game = ({ selectedTable, onBackToMenu, onScoreUpdate, onGameOver, mode = '
                 </div>
             </div>
 
+            {/* Power-ups - kun i adventure mode */}
+            {mode === 'adventure' && powerUps && (
+                <div className="mb-6 bg-white/20 backdrop-blur-sm rounded-2xl p-4">
+                    <h3 className="text-lg font-bold text-white mb-3">⚡ Power-ups</h3>
+                    <div className="flex gap-3 flex-wrap">
+                        <button
+                            onClick={() => usePowerUp('double')}
+                            disabled={powerUps.double.active || powerUps.double.uses <= 0}
+                            className={`px-3 py-2 rounded-xl text-sm font-bold transition-all duration-200 ${
+                                powerUps.double.active 
+                                    ? 'bg-green-500 text-white' 
+                                    : powerUps.double.uses > 0 
+                                        ? 'bg-blue-500 text-white hover:bg-blue-600' 
+                                        : 'bg-gray-500 text-white/50'
+                            }`}
+                        >
+                            💎 2x Poeng {powerUps.double.active ? '(Aktiv)' : `(${powerUps.double.uses})`}
+                        </button>
+                        <button
+                            onClick={() => usePowerUp('hint')}
+                            disabled={powerUps.hint.uses <= 0}
+                            className={`px-3 py-2 rounded-xl text-sm font-bold transition-all duration-200 ${
+                                powerUps.hint.uses > 0 
+                                    ? 'bg-yellow-500 text-white hover:bg-yellow-600' 
+                                    : 'bg-gray-500 text-white/50'
+                            }`}
+                        >
+                            💡 Hint ({powerUps.hint.uses})
+                        </button>
+                        <button
+                            onClick={() => usePowerUp('time')}
+                            disabled={powerUps.time.uses <= 0}
+                            className={`px-3 py-2 rounded-xl text-sm font-bold transition-all duration-200 ${
+                                powerUps.time.uses > 0 
+                                    ? 'bg-purple-500 text-white hover:bg-purple-600' 
+                                    : 'bg-gray-500 text-white/50'
+                            }`}
+                        >
+                            ⏰ Ekstra Tid ({powerUps.time.uses})
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Klassisk modus info */}
+            {mode === 'normal' && (
+                <div className="mb-6 bg-white/20 backdrop-blur-sm rounded-2xl p-4">
+                    <h3 className="text-lg font-bold text-white mb-2">📚 Klassisk Modus</h3>
+                    <p className="text-white/80 text-sm">
+                        Fokus på læring og repetisjon. Ingen power-ups eller Gangemon, bare ren gangetabell-trening.
+                    </p>
+                </div>
+            )}
+
             <div className="bg-white/20 backdrop-blur-sm rounded-3xl p-8 mb-8">
                 <h2 className="text-4xl font-bold text-white mb-8">
-                    {selectedTable ? `${selectedTable}-gangen` : 'Blandet oppgaver'}
+                    {mode === 'adventure' ? '🎮 Adventure Mode' : '📚 Klassisk Modus'} - {selectedTable ? `${selectedTable}-gangen` : 'Blandet oppgaver'}
                 </h2>
                 
-                <div className={`text-6xl font-bold text-white mb-8 ${animation}`}>
+                <div className={`text-6xl font-bold text-white mb-8 transition-all duration-300 ${animation} relative`}>
                     {currentQuestion.question} = ?
+                    {showCorrectAnimation && (
+                        <div className="absolute -top-4 -right-4 text-4xl animate-sparkle">✨</div>
+                    )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-6">
@@ -903,14 +1224,14 @@ const Game = ({ selectedTable, onBackToMenu, onScoreUpdate, onGameOver, mode = '
                             key={index}
                             onClick={() => handleAnswer(answer)}
                             disabled={selectedAnswer}
-                            className={`p-6 rounded-2xl text-3xl font-bold transition-all duration-200 ${
+                            className={`p-6 rounded-2xl text-3xl font-bold transition-all duration-300 transform ${
                                 selectedAnswer === answer
                                     ? answer === currentQuestion.answer
-                                        ? 'bg-green-500 text-white transform scale-105'
-                                        : 'bg-red-500 text-white transform scale-105'
+                                        ? 'bg-green-500 text-white scale-110 shadow-2xl animate-pulse'
+                                        : 'bg-red-500 text-white scale-95 animate-shake'
                                     : selectedAnswer && answer === currentQuestion.answer
-                                        ? 'bg-green-500 text-white transform scale-105'
-                                        : 'bg-white/30 text-white hover:bg-white/50 hover:scale-105'
+                                        ? 'bg-green-500 text-white scale-110 shadow-2xl animate-pulse'
+                                        : 'bg-white/30 text-white hover:bg-white/50 hover:scale-105 hover:shadow-lg'
                             }`}
                         >
                             {answer}
@@ -941,6 +1262,11 @@ const App = () => {
     const [badges, setBadges] = useState([]);
     const [streakForBadge, setStreakForBadge] = useState(0);
     const [lastRushSummary, setLastRushSummary] = useState(null);
+    // Gangemon V1 state
+    const [gangemon, setGangemon] = useState([]); // owned ids
+    const [pendingGangemon, setPendingGangemon] = useState([]); // queue for modal
+    const [showNewGangemon, setShowNewGangemon] = useState(false);
+    const [showBadgeCollection, setShowBadgeCollection] = useState(false);
     
     // Nye state for alle funksjoner
     const [currentAvatar, setCurrentAvatar] = useState(AVATARS[0]);
@@ -1000,6 +1326,9 @@ const App = () => {
             }
         });
         setBadges(data.badges || []);
+        // Gangemon V1: load owned and pending if present
+        setGangemon(Array.isArray(data.gangemon) ? data.gangemon : []);
+        setPendingGangemon(Array.isArray(data.pendingGangemon) ? data.pendingGangemon : []);
         setDailyChallenge(getDailyChallenge());
         setCurrentView('menu');
     };
@@ -1014,7 +1343,9 @@ const App = () => {
                 isMuted,
                 powerUps,
                 stats,
-                badges
+                badges,
+                gangemon,
+                pendingGangemon
             };
             saveUserData(currentUser, updatedData);
             setUserData(updatedData);
@@ -1039,6 +1370,8 @@ const App = () => {
                 soundFrequency: localStorage.getItem('gangetabell-sound-frequency') || 'normal',
                 powerUps: { double: { active: false, endTime: 0 }, hint: { uses: 0 }, time: { uses: 0 } },
                 badges: [],
+                gangemon: [],
+                pendingGangemon: [],
                 stats: {
                     totalCorrect: 0,
                     maxStreak: 0,
@@ -1114,9 +1447,19 @@ const App = () => {
         }
     }, []);
 
-    const handleStartGame = (table) => {
+    const handleStartGame = (table, gameMode = 'classic') => {
         setSelectedTable(table);
-        setMode('normal');
+        setMode(gameMode === 'adventure' ? 'adventure' : 'normal');
+        // V1: Gi start-common første gang Adventure åpnes for bruker uten noen gangemon
+        if (gameMode === 'adventure' && gangemon.length === 0) {
+            const commons = GANGEMON.filter(g => g.rarity === 'common');
+            const random = commons[Math.floor(Math.random() * commons.length)];
+            if (random && !gangemon.includes(random.id)) {
+                setGangemon([random.id]);
+                setPendingGangemon([random.id]);
+                setShowNewGangemon(true);
+            }
+        }
         setCurrentView('game');
     };
 
@@ -1128,6 +1471,9 @@ const App = () => {
 
     const handleBackToMenu = () => {
         setCurrentView('menu');
+        // Reset game mode when going back to menu
+        setSelectedTable(null);
+        setMode('normal');
     };
 
     const usePowerUp = (powerUpId) => {
@@ -1154,7 +1500,7 @@ const App = () => {
         }
     };
 
-    const handleScoreUpdate = (points, isCorrect, answerTime) => {
+    const handleScoreUpdate = (points, isCorrect, answerTime, currentStreak = 0) => {
         let finalPoints = points;
         
         // 2x poeng power-up
@@ -1166,17 +1512,7 @@ const App = () => {
         setScore(newScore);
         localStorage.setItem('gangetabell-score', newScore.toString());
 
-        // Oppdater stats
-        if (isCorrect) {
-            setStats(prev => ({
-                ...prev,
-                totalCorrect: prev.totalCorrect + 1,
-                dailyCorrect: prev.dailyCorrect + 1,
-                fastestAnswer: Math.min(prev.fastestAnswer, answerTime || 999999)
-            }));
-        }
-
-        // Oppdater statistikk per gangetabell
+        // Oppdater stats (kombiner begge oppdateringene i én)
         setStats(prev => {
             const tableKey = selectedTable || 'mixed';
             const tableStats = prev.tableStats || {};
@@ -1184,6 +1520,13 @@ const App = () => {
             
             return {
                 ...prev,
+                // Oppdater totalCorrect og dailyCorrect hvis riktig svar
+                ...(isCorrect && {
+                    totalCorrect: prev.totalCorrect + 1,
+                    dailyCorrect: prev.dailyCorrect + 1,
+                    fastestAnswer: Math.min(prev.fastestAnswer, answerTime || 999999)
+                }),
+                // Oppdater statistikk per gangetabell
                 tableStats: {
                     ...tableStats,
                     [tableKey]: {
@@ -1195,8 +1538,21 @@ const App = () => {
         });
 
         // Sjekk badges
-        if (newScore >= 100 && !badges.includes('100-poeng')) {
-            const updated = [...badges, '100-poeng'];
+        const newBadges = [];
+        if (newScore >= 100 && !badges.includes('100-poeng')) newBadges.push('100-poeng');
+        if (newScore >= 500 && !badges.includes('500-poeng')) newBadges.push('500-poeng');
+        if (newScore >= 1000 && !badges.includes('1000-poeng')) newBadges.push('1000-poeng');
+        
+        // Sjekk streak badges
+        if (currentStreak >= 5 && !badges.includes('5-paa-rad')) newBadges.push('5-paa-rad');
+        if (currentStreak >= 10 && !badges.includes('10-paa-rad')) newBadges.push('10-paa-rad');
+        if (currentStreak >= 20 && !badges.includes('20-paa-rad')) newBadges.push('20-paa-rad');
+        
+        // Sjekk speed badge
+        if (answerTime && answerTime < 2000 && !badges.includes('speed-demon')) newBadges.push('speed-demon');
+        
+        if (newBadges.length > 0) {
+            const updated = [...badges, ...newBadges];
             setBadges(updated);
             localStorage.setItem('gangetabell-badges', JSON.stringify(updated));
             playSfx('badge');
@@ -1212,6 +1568,22 @@ const App = () => {
             playSfx('badge');
             setConfettiBurst(true);
             setTimeout(() => setConfettiBurst(false), 1200);
+        }
+
+        // Gangemon V1 unlock (Adventure only, 1 per riktig svar)
+        // Kun når en terskel passeres (ikke hver gang noe er «tilgjengelig»)
+        if (mode === 'adventure' && isCorrect) {
+            const previousTotal = stats.totalCorrect;
+            const updatedTotalCorrect = previousTotal + 1;
+            // Starter‑commons håndteres separat ved oppstart; ignorer unlockAt === 0 her
+            const next = GANGEMON.find(g => g.unlockAt > 0 &&
+                previousTotal < g.unlockAt && g.unlockAt <= updatedTotalCorrect &&
+                !gangemon.includes(g.id));
+            if (next) {
+                setGangemon(prev => [...prev, next.id]);
+                setPendingGangemon(prev => [...prev, next.id]);
+                setShowNewGangemon(true);
+            }
         }
 
         // Oppdater daglig utfordring
@@ -1339,6 +1711,30 @@ const SOUNDS = {
             });
         }
         setCurrentView('menu');
+        // Reset game mode when game ends
+        setSelectedTable(null);
+        setMode('normal');
+    };
+
+    const handleDeleteCurrentUser = () => {
+        if (!currentUser) return;
+        if (!confirm(`Slette bruker "${currentUser}"? Dette kan ikke angres.`)) return;
+        deleteUserData(currentUser);
+        localStorage.removeItem('gangetabell-current-user');
+        setCurrentUserState(null);
+        setUserData(null);
+        setScore(0);
+        setCurrentView('userSelect');
+    };
+
+    // Gangemon handlers temporarily removed
+
+    const handleShowBadges = () => {
+        setShowBadgeCollection(true);
+    };
+
+    const handleCloseBadges = () => {
+        setShowBadgeCollection(false);
     };
 
     return (
@@ -1383,6 +1779,10 @@ const SOUNDS = {
                         currentUser={currentUser}
                         onSwitchUser={() => setCurrentView('userSelect')}
                         onShowStats={() => setCurrentView('stats')}
+                        onDeleteCurrentUser={handleDeleteCurrentUser}
+                        // Gangemon props temporarily removed
+                        badges={badges}
+                        onShowBadges={handleShowBadges}
                     />
                 ) : currentView === 'stats' ? (
                     <StatsOverview 
@@ -1393,7 +1793,7 @@ const SOUNDS = {
                     <Game 
                         selectedTable={selectedTable}
                         onBackToMenu={handleBackToMenu}
-                        onScoreUpdate={(points, isCorrect, answerTime) => {
+                        onScoreUpdate={(points, isCorrect, answerTime, currentStreak) => {
                             setStreakForBadge(prev => {
                                 const next = points > 0 ? prev + 1 : 0;
                                 if (next >= 5 && !badges.includes('5-paa-rad')) {
@@ -1405,13 +1805,14 @@ const SOUNDS = {
                                 }
                                 return next;
                             });
-                            handleScoreUpdate(points, isCorrect, answerTime);
+                            handleScoreUpdate(points, isCorrect, answerTime, currentStreak);
                         }}
                         onGameOver={handleGameOver}
                         mode={mode}
                         playSfx={playSfx}
                         triggerConfetti={triggerConfetti}
                         powerUps={powerUps}
+                        usePowerUp={usePowerUp}
                     />
                 )}
                 
@@ -1419,23 +1820,97 @@ const SOUNDS = {
                     <div className="mt-6 bg-white/30 backdrop-blur-sm rounded-2xl p-5 text-white">
                         <div className="text-2xl font-bold mb-2">⏱️ Rush resultater</div>
                         <div className="text-lg">Riktig: <span className="font-bold">{lastRushSummary.correct}</span> av {lastRushSummary.total}</div>
-                        <div className="text-lg">Bra jobbet! Prøv igjen og slå rekorden din! 🏆</div>
+                        <div className="text-lg mb-4">Bra jobbet! Prøv igjen og slå rekorden din! 🏆</div>
+                        <button
+                            onClick={() => setLastRushSummary(null)}
+                            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl font-bold transition-all duration-200"
+                        >
+                            ✕ Lukk resultater
+                        </button>
                     </div>
                 )}
                 
                 {badges.length > 0 && currentView === 'menu' && (
-                    <div className="mt-6 bg-white/20 backdrop-blur-sm rounded-2xl p-4 text-white">
-                        <div className="font-bold mb-2">🏅 Dine merker:</div>
-                        <div className="flex gap-3 flex-wrap">
-                            {badges.includes('5-paa-rad') && <span className="px-3 py-1 rounded-xl bg-green-500 text-white">5 på rad</span>}
-                            {badges.includes('100-poeng') && <span className="px-3 py-1 rounded-xl bg-yellow-500 text-black">100 poeng</span>}
+                    <div className="mt-6 bg-white/30 backdrop-blur-sm rounded-2xl p-4 text-white">
+                        <div className="font-bold mb-2">🏅 Dine merker ({badges.length}):</div>
+                        <div className="flex gap-2 flex-wrap">
+                            {badges.includes('5-paa-rad') && <span className="px-2 py-1 rounded-lg bg-green-500 text-white text-sm">🔥 5 på rad</span>}
+                            {badges.includes('10-paa-rad') && <span className="px-2 py-1 rounded-lg bg-blue-500 text-white text-sm">⚡ 10 på rad</span>}
+                            {badges.includes('20-paa-rad') && <span className="px-2 py-1 rounded-lg bg-purple-500 text-white text-sm">🌟 20 på rad</span>}
+                            {badges.includes('100-poeng') && <span className="px-2 py-1 rounded-lg bg-yellow-500 text-black text-sm">💯 100 poeng</span>}
+                            {badges.includes('500-poeng') && <span className="px-2 py-1 rounded-lg bg-orange-500 text-white text-sm">🏆 500 poeng</span>}
+                            {badges.includes('1000-poeng') && <span className="px-2 py-1 rounded-lg bg-red-500 text-white text-sm">👑 1000 poeng</span>}
+                            {badges.includes('speed-demon') && <span className="px-2 py-1 rounded-lg bg-indigo-500 text-white text-sm">⚡ Speed Demon</span>}
+                            {badges.includes('perfectionist') && <span className="px-2 py-1 rounded-lg bg-pink-500 text-white text-sm">💎 Perfeksjonist</span>}
+                            {badges.includes('daily-warrior') && <span className="px-2 py-1 rounded-lg bg-teal-500 text-white text-sm">🗡️ Daglig Kriger</span>}
+                            {/* {badges.includes('gangemon-master') && <span className="px-2 py-1 rounded-lg bg-cyan-500 text-white text-sm">🎮 Gangemon Mester</span>} */}
+                        </div>
+                    </div>
+                )}
+
+                {/* New Gangemon Unlock Modal (V1) */}
+                {showNewGangemon && pendingGangemon.length > 0 && (
+                    <Modal onClose={() => { setPendingGangemon(prev => prev.slice(1)); setShowNewGangemon(prev => prev && pendingGangemon.length - 1 > 0); }}>
+                            <h2 id="modal-title" className="text-3xl font-bold text-white mb-4">🎉 Ny Gangemon!</h2>
+                            {(() => {
+                                const id = pendingGangemon[0];
+                                const g = GANGEMON.find(x => x.id === id);
+                                if (!g) return null;
+                                return (
+                                    <div className="mb-4">
+                                        <div className="text-6xl mb-2 animate-bounce">{g.emoji}</div>
+                                        <h3 className="text-2xl font-bold text-white mb-2">{g.name}</h3>
+                                        <div className={`inline-block px-3 py-1 rounded-full text-sm font-bold text-white ${
+                                            g.rarity === 'common' ? 'bg-gray-500' :
+                                            g.rarity === 'rare' ? 'bg-blue-500' :
+                                            g.rarity === 'legendary' ? 'bg-purple-500' :
+                                            'bg-yellow-500'
+                                        }`}>
+                                            {g.rarity.toUpperCase()}
+                                        </div>
+                                    </div>
+                                );
+                            })()}
+                        <button
+                            onClick={() => {
+                                setPendingGangemon(prev => prev.slice(1));
+                                setShowNewGangemon(prev => prev && pendingGangemon.length - 1 > 0);
+                            }}
+                            className="bg-white text-purple-600 px-6 py-3 rounded-xl font-bold text-lg hover:bg-gray-100 transition-colors"
+                            aria-label="Lukk og gå videre"
+                        >
+                            Fantastisk! 🚀
+                        </button>
+                    </Modal>
+                )}
+
+                {/* Badge Collection Modal */}
+                {showBadgeCollection && (
+                    <BadgeCollection 
+                        badges={badges}
+                        onClose={handleCloseBadges}
+                    />
+                )}
+
+                {/* Enkel Gangemon-oversikt i meny */}
+                {currentView === 'menu' && gangemon.length > 0 && (
+                    <div className="mt-6 bg-white/30 backdrop-blur-sm rounded-2xl p-4 text-white">
+                        <div className="flex items-center justify-between">
+                            <div className="font-bold">🎮 Gangemon: {gangemon.length}</div>
+                            <div className="flex gap-2 flex-wrap">
+                                {gangemon.slice(0,6).map(id => {
+                                    const g = GANGEMON.find(x => x.id === id);
+                                    return <span key={id} className="text-2xl" title={g?.name}>{g?.emoji || '❓'}</span>
+                                })}
+                                {gangemon.length > 6 && <span className="opacity-80">+{gangemon.length - 6}</span>}
+                            </div>
                         </div>
                     </div>
                 )}
             </div>
         </div>
     );
-};
+}
 
 // Installer-app prompt
 let deferredPrompt = null;
@@ -1521,6 +1996,66 @@ if ('serviceWorker' in navigator) {
         });
     });
 }
+
+// Legg til CSS-animasjoner
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+    
+    @keyframes bounce-in {
+        0% { transform: scale(0.3); opacity: 0; }
+        50% { transform: scale(1.05); }
+        70% { transform: scale(0.9); }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    @keyframes sparkle {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.5; transform: scale(1.2); }
+    }
+    
+    .animate-shake {
+        animation: shake 0.5s ease-in-out;
+    }
+    
+    .animate-bounce-in {
+        animation: bounce-in 0.6s ease-out;
+    }
+    
+    .animate-float {
+        animation: float 2s ease-in-out infinite;
+    }
+    
+    .animate-sparkle {
+        animation: sparkle 1s ease-in-out infinite;
+    }
+    
+    .confetti-piece {
+        position: absolute;
+        animation: confetti-fall 3s linear infinite;
+    }
+    
+    @keyframes confetti-fall {
+        0% {
+            transform: translateY(-100vh) rotate(0deg);
+            opacity: 1;
+        }
+        100% {
+            transform: translateY(100vh) rotate(720deg);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
 
 // Render appen
 const root = ReactDOM.createRoot(document.getElementById('root'));
