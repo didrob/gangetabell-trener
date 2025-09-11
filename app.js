@@ -263,6 +263,19 @@ const generateWrongAnswers = (correctAnswer) => {
 
 // Statistikk komponent
 const StatsOverview = ({ stats, onBack }) => {
+    const getOperationStats = () => {
+        const ops = [
+            { id: 'add', name: 'Addisjon', emoji: '➕' },
+            { id: 'sub', name: 'Subtraksjon', emoji: '➖' },
+            { id: 'mul', name: 'Multiplikasjon', emoji: '✖️' },
+            { id: 'mixed', name: 'Blandet', emoji: '🎲' }
+        ];
+        return ops.map(op => {
+            const s = stats.operationStats?.[op.id] || { correct: 0, total: 0 };
+            const percentage = s.total > 0 ? Math.round((s.correct / s.total) * 100) : 0;
+            return { ...op, correct: s.correct, total: s.total, percentage };
+        });
+    };
     const getTableStats = () => {
         const tables = [2, 3, 4, 5, 6, 7, 8, 9, 10];
         return tables.map(table => {
@@ -278,6 +291,7 @@ const StatsOverview = ({ stats, onBack }) => {
     };
 
     const tableStats = getTableStats();
+    const opStats = getOperationStats();
     const mixedStat = stats.tableStats?.mixed || { correct: 0, total: 0 };
     const mixedPercentage = mixedStat.total > 0 ? Math.round((mixedStat.correct / mixedStat.total) * 100) : 0;
 
@@ -333,6 +347,23 @@ const StatsOverview = ({ stats, onBack }) => {
                         className={`h-4 rounded-full transition-all duration-300 ${getColorClass(mixedPercentage)}`}
                         style={{ width: `${mixedPercentage}%` }}
                     ></div>
+                </div>
+            </div>
+
+            {/* Per operasjon */}
+            <div className="bg-white/30 backdrop-blur-sm rounded-2xl p-6 mb-6">
+                <h2 className="text-2xl font-bold text-white mb-4">🧮 Per operasjon</h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {opStats.map(op => (
+                        <div key={op.id} className="bg-white/10 rounded-xl p-4 text-white">
+                            <div className="text-xl font-bold mb-1">{op.emoji} {op.name}</div>
+                            <div className="text-lg">{op.correct}/{op.total}</div>
+                            <div className="text-sm mb-2">{op.percentage}% riktig</div>
+                            <div className="w-full bg-white/20 rounded-full h-2">
+                                <div className={`h-2 rounded-full ${op.percentage>=80?'bg-green-500':op.percentage>=60?'bg-yellow-500':op.percentage>=40?'bg-orange-500':'bg-red-500'}`} style={{ width: `${op.percentage}%` }} />
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
 
@@ -836,7 +867,7 @@ const UserSelect = ({ onUserSelect, onNewUser }) => {
 };
 
 // FORENKLET StartMenu komponent
-const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, setIsMuted, currentAvatar, setCurrentAvatar, currentTheme, setCurrentTheme, powerUps, usePowerUp, dailyChallenge, soundVolume, setSoundVolume, soundType, setSoundType, soundFrequency, setSoundFrequency, playSfx, currentUser, onSwitchUser, onShowStats, onDeleteCurrentUser, badges, onShowBadges, gangemon, activeGangemonId, onSelectGangemon, selectedOperation, setSelectedOperation, selectedDifficulty, setSelectedDifficulty }) => {
+const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, setIsMuted, currentAvatar, setCurrentAvatar, currentTheme, setCurrentTheme, powerUps, usePowerUp, dailyChallenge, soundVolume, setSoundVolume, soundType, setSoundType, soundFrequency, setSoundFrequency, playSfx, currentUser, onSwitchUser, onShowStats, onDeleteCurrentUser, badges, onShowBadges, gangemon, activeGangemonId, onSelectGangemon, selectedOperation, setSelectedOperation, selectedOperations, setSelectedOperations, selectedDifficulty, setSelectedDifficulty }) => {
     const [gameMode, setGameMode] = useState(null); // 'classic' or 'adventure'
     const [selectedTable, setSelectedTable] = useState(null);
     // operation/difficulty styres fra App
@@ -971,21 +1002,35 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <h2 className="text-2xl font-bold text-white mb-4">Velg oppgavetype:</h2>
-                            <div className="flex gap-2" role="group" aria-label="Oppgavetyper">
-                                {OPERATIONS.map(op => (
-                                    <button
-                                        key={op.id}
-                                        onClick={() => setSelectedOperation(op.id)}
-                                        className={`p-3 rounded-xl text-lg font-bold transition-all duration-200 ${
-                                            selectedOperation === op.id ? 'bg-yellow-400 text-black transform scale-105' : 'bg-white/30 text-white hover:bg-white/50'
-                                        }`}
-                                        aria-pressed={selectedOperation === op.id}
-                                        aria-label={op.name}
-                                    >
-                                        {op.label}
-                                    </button>
-                                ))}
+                            <div className="flex gap-2" role="group" aria-label="Oppgavetyper (fler-valg)">
+                                {OPERATIONS.map(op => {
+                                    const active = selectedOperations.includes(op.id);
+                                    return (
+                                        <button
+                                            key={op.id}
+                                            onClick={() => {
+                                                setSelectedOperation(op.id);
+                                                setSelectedOperations(prev => {
+                                                    const has = prev.includes(op.id);
+                                                    const next = has ? prev.filter(x => x !== op.id) : [...prev, op.id];
+                                                    // minst én må være valgt
+                                                    return next.length === 0 ? ['mul'] : next;
+                                                });
+                                            }}
+                                            className={`p-3 rounded-xl text-lg font-bold transition-all duration-200 ${
+                                                active ? 'bg-yellow-400 text-black transform scale-105' : 'bg-white/30 text-white hover:bg-white/50'
+                                            }`}
+                                            aria-pressed={active}
+                                            aria-label={`${op.name} ${active ? 'valgt' : 'ikke valgt'}`}
+                                        >
+                                            {op.label}
+                                        </button>
+                                    );
+                                })}
                             </div>
+                            {selectedOperations.length > 1 && (
+                                <div className="mt-2 text-sm font-bold text-white/80">Blandet oppgaver aktivert</div>
+                            )}
                         </div>
                         <div>
                             <h2 className="text-2xl font-bold text-white mb-4">Velg nivå:</h2>
@@ -1021,7 +1066,7 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                             ← Tilbake til modus
                         </button>
                     </div>
-                <div className={`grid grid-cols-5 gap-3 mb-4 ${selectedOperation !== 'mul' ? 'opacity-50 pointer-events-none' : ''}`}>
+                <div className={`grid grid-cols-5 gap-3 mb-4 ${!selectedOperations.includes('mul') ? 'opacity-50 pointer-events-none' : ''}`}>
                     {[2, 3, 4, 5, 6, 7, 8, 9, 10].map(table => (
                         <button
                             key={table}
@@ -1332,7 +1377,7 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
 
 
 // Spill komponent
-const Game = ({ selectedTable, selectedOperation = 'mul', selectedDifficulty = 'easy', onBackToMenu, onScoreUpdate, onGameOver, mode = 'normal', playSfx, triggerConfetti, powerUps, usePowerUp, activeGangemonId }) => {
+const Game = ({ selectedTable, selectedOperation = 'mul', selectedOperations = ['mul'], selectedDifficulty = 'easy', onBackToMenu, onScoreUpdate, onGameOver, mode = 'normal', playSfx, triggerConfetti, powerUps, usePowerUp, activeGangemonId }) => {
     const [currentQuestion, setCurrentQuestion] = useState(null);
     const [answers, setAnswers] = useState([]);
     const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -1371,7 +1416,10 @@ const Game = ({ selectedTable, selectedOperation = 'mul', selectedDifficulty = '
     }, []);
 
     const generateNewQuestion = () => {
-        const question = generateQuestion(selectedTable, selectedOperation, selectedDifficulty);
+        const op = (selectedOperations && selectedOperations.length > 1)
+            ? selectedOperations[Math.floor(Math.random() * selectedOperations.length)]
+            : selectedOperation;
+        const question = generateQuestion(selectedTable, op, selectedDifficulty);
         const wrongAnswers = generateWrongAnswers(question.answer);
         const allAnswers = [question.answer, ...wrongAnswers].sort(() => Math.random() - 0.5);
         setCurrentQuestion(question);
@@ -1599,6 +1647,12 @@ const App = () => {
             fastestAnswer: 999999,
             dailyCorrect: 0,
             lastPlayDate: new Date().toDateString(),
+            operationStats: {
+                add: { correct: 0, total: 0 },
+                sub: { correct: 0, total: 0 },
+                mul: { correct: 0, total: 0 },
+                mixed: { correct: 0, total: 0 }
+            },
             tableStats: {
                 2: { correct: 0, total: 0 },
                 3: { correct: 0, total: 0 },
@@ -1628,6 +1682,12 @@ const App = () => {
             fastestAnswer: 999999, 
             dailyCorrect: 0, 
             lastPlayDate: new Date().toDateString(),
+            operationStats: {
+                add: { correct: 0, total: 0 },
+                sub: { correct: 0, total: 0 },
+                mul: { correct: 0, total: 0 },
+                mixed: { correct: 0, total: 0 }
+            },
             tableStats: {
                 2: { correct: 0, total: 0 },
                 3: { correct: 0, total: 0 },
@@ -1766,6 +1826,7 @@ const App = () => {
     }, []);
 
     const [selectedOperation, setSelectedOperation] = useState('mul');
+    const [selectedOperations, setSelectedOperations] = useState(['mul']);
     const [selectedDifficulty, setSelectedDifficulty] = useState('easy');
 
     const handleStartGame = (table, gameMode = 'classic') => {
@@ -1851,6 +1912,12 @@ const App = () => {
             const tableKey = selectedTable || 'mixed';
             const tableStats = prev.tableStats || {};
             const currentTableStats = tableStats[tableKey] || { correct: 0, total: 0 };
+            const opStats = prev.operationStats || { add:{correct:0,total:0}, sub:{correct:0,total:0}, mul:{correct:0,total:0}, mixed:{correct:0,total:0} };
+            // bestem operasjon basert på currentQuestion (fra Game) finnes ikke her, så bruk selectedOperation/selectedOperations heuristikk
+            const op = (selectedOperations && selectedOperations.length > 1)
+                ? 'mixed'
+                : selectedOperation || 'mul';
+            const currOp = opStats[op] || { correct: 0, total: 0 };
             
             return {
                 ...prev,
@@ -1866,6 +1933,14 @@ const App = () => {
                     [tableKey]: {
                         correct: currentTableStats.correct + (isCorrect ? 1 : 0),
                         total: currentTableStats.total + 1
+                    }
+                },
+                // Oppdater per operasjon
+                operationStats: {
+                    ...opStats,
+                    [op]: {
+                        correct: currOp.correct + (isCorrect ? 1 : 0),
+                        total: currOp.total + 1
                     }
                 }
             };
@@ -2121,6 +2196,8 @@ const SOUNDS = {
                         // pass operation/difficulty to menu for selection state
                         selectedOperation={selectedOperation}
                         setSelectedOperation={setSelectedOperation}
+                        selectedOperations={selectedOperations}
+                        setSelectedOperations={setSelectedOperations}
                         selectedDifficulty={selectedDifficulty}
                         setSelectedDifficulty={setSelectedDifficulty}
                         gangemon={gangemon}
@@ -2138,6 +2215,7 @@ const SOUNDS = {
                     <Game 
                         selectedTable={selectedTable}
                         selectedOperation={selectedOperation}
+                        selectedOperations={selectedOperations}
                         selectedDifficulty={selectedDifficulty}
                         onBackToMenu={handleBackToMenu}
                         onScoreUpdate={(points, isCorrect, answerTime, currentStreak) => {
