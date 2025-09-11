@@ -37,7 +37,8 @@ const POWER_UPS = [
 const OPERATIONS = [
     { id: 'add', label: '+', name: 'Addisjon' },
     { id: 'sub', label: '−', name: 'Subtraksjon' },
-    { id: 'mul', label: '×', name: 'Multiplikasjon' }
+    { id: 'mul', label: '×', name: 'Multiplikasjon' },
+    { id: 'div', label: '÷', name: 'Divisjon' }
 ];
 
 const DIFFICULTIES = [
@@ -224,7 +225,7 @@ const generateQuestion = (selectedTable = null, operation = 'mul', difficulty = 
         };
     }
 
-    // Addisjon/Subtraksjon
+    // Addisjon/Subtraksjon/Divisjon
     const diffCfg = DIFFICULTIES.find(d => d.id === difficulty) || DIFFICULTIES[0];
     const max = diffCfg.range;
     const a = Math.floor(Math.random() * (max + 1));
@@ -238,6 +239,19 @@ const generateQuestion = (selectedTable = null, operation = 'mul', difficulty = 
             difficulty
         };
     }
+    if (operation === 'div') {
+        // Heltallsdivisjon uten rest: konstruer ved å gange og så dele
+        const divisor = Math.max(1, Math.floor(Math.random() * (Math.min(max, 10)) + 1));
+        const quotient = Math.floor(Math.random() * (Math.floor(max / Math.max(divisor,1)) + 1));
+        const dividend = divisor * quotient;
+        return {
+            question: `${dividend} ÷ ${divisor}`,
+            answer: quotient,
+            operation,
+            difficulty
+        };
+    }
+
     // sub
     // For UX: unngå negative svar i enklere nivåer
     const [x, y] = a >= b ? [a, b] : [b, a];
@@ -268,6 +282,7 @@ const StatsOverview = ({ stats, onBack }) => {
             { id: 'add', name: 'Addisjon', emoji: '➕' },
             { id: 'sub', name: 'Subtraksjon', emoji: '➖' },
             { id: 'mul', name: 'Multiplikasjon', emoji: '✖️' },
+            { id: 'div', name: 'Divisjon', emoji: '➗' },
             { id: 'mixed', name: 'Blandet', emoji: '🎲' }
         ];
         return ops.map(op => {
@@ -1415,6 +1430,15 @@ const Game = ({ selectedTable, selectedOperation = 'mul', selectedOperations = [
         }
     }, []);
 
+    // ESC for tilbake til meny – må være før eventuell early return for å unngå hooks-rot
+    useEffect(() => {
+        const onKey = (e) => {
+            if (e.key === 'Escape') onBackToMenu && onBackToMenu();
+        };
+        document.addEventListener('keydown', onKey);
+        return () => document.removeEventListener('keydown', onKey);
+    }, [onBackToMenu]);
+
     const generateNewQuestion = () => {
         const op = (selectedOperations && selectedOperations.length > 1)
             ? selectedOperations[Math.floor(Math.random() * selectedOperations.length)]
@@ -1482,15 +1506,6 @@ const Game = ({ selectedTable, selectedOperation = 'mul', selectedOperations = [
     };
 
     if (!currentQuestion) return <div>Laster...</div>;
-
-    // ESC for tilbake til meny
-    useEffect(() => {
-        const onKey = (e) => {
-            if (e.key === 'Escape') onBackToMenu && onBackToMenu();
-        };
-        document.addEventListener('keydown', onKey);
-        return () => document.removeEventListener('keydown', onKey);
-    }, [onBackToMenu]);
 
     return (
         <div className="text-center p-8">
@@ -1651,6 +1666,7 @@ const App = () => {
                 add: { correct: 0, total: 0 },
                 sub: { correct: 0, total: 0 },
                 mul: { correct: 0, total: 0 },
+                div: { correct: 0, total: 0 },
                 mixed: { correct: 0, total: 0 }
             },
             tableStats: {
@@ -1686,6 +1702,7 @@ const App = () => {
                 add: { correct: 0, total: 0 },
                 sub: { correct: 0, total: 0 },
                 mul: { correct: 0, total: 0 },
+                div: { correct: 0, total: 0 },
                 mixed: { correct: 0, total: 0 }
             },
             tableStats: {
@@ -1912,11 +1929,10 @@ const App = () => {
             const tableKey = selectedTable || 'mixed';
             const tableStats = prev.tableStats || {};
             const currentTableStats = tableStats[tableKey] || { correct: 0, total: 0 };
-            const opStats = prev.operationStats || { add:{correct:0,total:0}, sub:{correct:0,total:0}, mul:{correct:0,total:0}, mixed:{correct:0,total:0} };
+            const opStats = prev.operationStats || { add:{correct:0,total:0}, sub:{correct:0,total:0}, mul:{correct:0,total:0}, div:{correct:0,total:0}, mixed:{correct:0,total:0} };
             // bestem operasjon basert på currentQuestion (fra Game) finnes ikke her, så bruk selectedOperation/selectedOperations heuristikk
-            const op = (selectedOperations && selectedOperations.length > 1)
-                ? 'mixed'
-                : selectedOperation || 'mul';
+            let op = (selectedOperations && selectedOperations.length > 1) ? 'mixed' : (selectedOperation || 'mul');
+            if (op !== 'mixed' && !['add','sub','mul','div'].includes(op)) op = 'mul';
             const currOp = opStats[op] || { correct: 0, total: 0 };
             
             return {
