@@ -1024,12 +1024,19 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                                         <button
                                             key={op.id}
                                             onClick={() => {
-                                                setSelectedOperation(op.id);
                                                 setSelectedOperations(prev => {
                                                     const has = prev.includes(op.id);
-                                                    const next = has ? prev.filter(x => x !== op.id) : [...prev, op.id];
-                                                    // minst én må være valgt
-                                                    return next.length === 0 ? ['mul'] : next;
+                                                    let next = has ? prev.filter(x => x !== op.id) : [...prev, op.id];
+                                                    if (next.length === 0) next = ['mul'];
+                                                    // Oppdater valgt operasjon slik at den alltid er i next
+                                                    if (!has) {
+                                                        // Vi la til denne – gjør den aktiv
+                                                        setSelectedOperation(op.id);
+                                                    } else if (!next.includes(selectedOperation)) {
+                                                        // Fjernet aktiv operasjon – velg første tilgjengelige
+                                                        setSelectedOperation(next[0]);
+                                                    }
+                                                    return next;
                                                 });
                                             }}
                                             className={`p-3 rounded-xl text-lg font-bold transition-all duration-200 ${
