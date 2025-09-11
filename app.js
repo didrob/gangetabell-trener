@@ -259,12 +259,12 @@ const StatsOverview = ({ stats, onBack }) => {
             </div>
 
             {/* Anbefaling */}
-            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4 mb-6">
+            <div className="bg-white/30 backdrop-blur-sm rounded-2xl p-4 mb-6">
                 <p className="text-lg text-white font-bold">{getRecommendation()}</p>
             </div>
 
             {/* Blandet statistikk */}
-            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 mb-6">
+            <div className="bg-white/30 backdrop-blur-sm rounded-2xl p-6 mb-6">
                 <h2 className="text-2xl font-bold text-white mb-4">🎲 Blandet oppgaver</h2>
                 <div className="flex items-center justify-center gap-4">
                     <div className="text-4xl font-bold text-white">
@@ -283,7 +283,7 @@ const StatsOverview = ({ stats, onBack }) => {
             </div>
 
             {/* Gangetabell statistikk */}
-            <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6">
+            <div className="bg-white/30 backdrop-blur-sm rounded-2xl p-6">
                 <h2 className="text-2xl font-bold text-white mb-6">📈 Gangetabell oversikt</h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                     {tableStats.map(({ table, correct, total, percentage }) => (
@@ -357,6 +357,51 @@ const ConfettiLayer = ({ burst }) => {
                     {colors[Math.floor(Math.random() * colors.length)]}
                 </div>
             ))}
+        </div>
+    );
+};
+
+// Tilgjengelig Modal-komponent (ESC-lukk, fokusfelle, ARIA)
+const Modal = ({ titleId = 'modal-title', onClose, children }) => {
+    const modalRef = React.useRef(null);
+
+    useEffect(() => {
+        const handleKey = (e) => {
+            if (e.key === 'Escape') onClose && onClose();
+            if (e.key === 'Tab' && modalRef.current) {
+                const focusables = modalRef.current.querySelectorAll(
+                    'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
+                );
+                if (focusables.length === 0) return;
+                const first = focusables[0];
+                const last = focusables[focusables.length - 1];
+                if (e.shiftKey && document.activeElement === first) {
+                    e.preventDefault();
+                    last.focus();
+                } else if (!e.shiftKey && document.activeElement === last) {
+                    e.preventDefault();
+                    first.focus();
+                }
+            }
+        };
+        document.addEventListener('keydown', handleKey);
+        // sett initialt fokus
+        setTimeout(() => {
+            modalRef.current?.focus();
+        }, 0);
+        return () => document.removeEventListener('keydown', handleKey);
+    }, [onClose]);
+
+    return (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50" role="dialog" aria-modal="true" aria-labelledby={titleId}>
+            <div ref={modalRef} tabIndex={-1} className="bg-white/10 backdrop-blur-md rounded-2xl p-6 w-full max-w-md outline-none">
+                {children}
+                <div className="mt-4 text-right">
+                    <button onClick={onClose} className="bg-white text-purple-700 px-4 py-2 rounded-xl font-bold hover:bg-gray-100" aria-label="Lukk dialog">
+                        Lukk
+                    </button>
+                </div>
+            </div>
         </div>
     );
 };
@@ -656,7 +701,7 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
 
             {/* Daglig utfordring - kompakt */}
             {dailyChallenge && !dailyChallenge.completed && (
-                <div className="bg-yellow-500/20 backdrop-blur-sm rounded-xl p-3 mb-6 text-white">
+                <div className="bg-yellow-500/30 backdrop-blur-sm rounded-xl p-3 mb-6 text-white">
                     <div className="flex items-center justify-between">
                         <div className="text-left">
                             <p className="text-sm font-bold">🎯 {dailyChallenge.name}</p>
@@ -766,35 +811,35 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
 
             {/* Kompakt navigasjon */}
             <div className="flex justify-center gap-3">
-                <button
+                <button aria-label="Åpne avatarvalg"
                     onClick={() => setShowAvatarSelect(!showAvatarSelect)}
                     className="p-3 rounded-xl text-white font-bold transition-all duration-200 bg-blue-500 hover:bg-blue-600"
                     title="Avatars"
                 >
                     👤
                 </button>
-                <button
+                <button aria-label="Åpne temavelger"
                     onClick={() => setShowThemeSelect(!showThemeSelect)}
                     className="p-3 rounded-xl text-white font-bold transition-all duration-200 bg-green-500 hover:bg-green-600"
                     title="Temaer"
                 >
                     🎨
                 </button>
-                <button
+                <button aria-label="Åpne power-ups"
                     onClick={() => setShowPowerUps(!showPowerUps)}
                     className="p-3 rounded-xl text-white font-bold transition-all duration-200 bg-purple-500 hover:bg-purple-600"
                     title="Power-ups"
                 >
                     ⚡
                 </button>
-                <button
+                <button aria-label="Åpne lydinnstillinger"
                     onClick={() => setShowSoundSelect(!showSoundSelect)}
                     className="p-3 rounded-xl text-white font-bold transition-all duration-200 bg-pink-500 hover:bg-pink-600"
                     title="Lyd"
                 >
                     🎵
                 </button>
-                <button
+                <button aria-label="Åpne statistikk"
                     onClick={onShowStats}
                     className="p-3 rounded-xl text-white font-bold transition-all duration-200 bg-indigo-500 hover:bg-indigo-600"
                     title="Statistikk"
@@ -802,7 +847,7 @@ const StartMenu = ({ onStartGame, onStartRush, currentLevel, score, isMuted, set
                     📊
                 </button>
                 {/* Gangemon button temporarily removed */}
-                <button
+                <button aria-label="Åpne badges"
                     onClick={onShowBadges}
                     className="p-3 rounded-xl text-white font-bold transition-all duration-200 bg-yellow-500 hover:bg-yellow-600"
                     title="Badge Collection"
@@ -1782,7 +1827,7 @@ const SOUNDS = {
                 )}
                 
                 {badges.length > 0 && currentView === 'menu' && (
-                    <div className="mt-6 bg-white/20 backdrop-blur-sm rounded-2xl p-4 text-white">
+                    <div className="mt-6 bg-white/30 backdrop-blur-sm rounded-2xl p-4 text-white">
                         <div className="font-bold mb-2">🏅 Dine merker ({badges.length}):</div>
                         <div className="flex gap-2 flex-wrap">
                             {badges.includes('5-paa-rad') && <span className="px-2 py-1 rounded-lg bg-green-500 text-white text-sm">🔥 5 på rad</span>}
@@ -1801,9 +1846,8 @@ const SOUNDS = {
 
                 {/* New Gangemon Unlock Modal (V1) */}
                 {showNewGangemon && pendingGangemon.length > 0 && (
-                    <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
-                        <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl p-8 max-w-md w-full text-center">
-                            <h2 className="text-3xl font-bold text-white mb-4">🎉 Ny Gangemon!</h2>
+                    <Modal onClose={() => { setPendingGangemon(prev => prev.slice(1)); setShowNewGangemon(prev => prev && pendingGangemon.length - 1 > 0); }}>
+                            <h2 id="modal-title" className="text-3xl font-bold text-white mb-4">🎉 Ny Gangemon!</h2>
                             {(() => {
                                 const id = pendingGangemon[0];
                                 const g = GANGEMON.find(x => x.id === id);
@@ -1823,17 +1867,17 @@ const SOUNDS = {
                                     </div>
                                 );
                             })()}
-                            <button
-                                onClick={() => {
-                                    setPendingGangemon(prev => prev.slice(1));
-                                    setShowNewGangemon(prev => prev && pendingGangemon.length - 1 > 0);
-                                }}
-                                className="bg-white text-purple-600 px-6 py-3 rounded-xl font-bold text-lg hover:bg-gray-100 transition-colors"
-                            >
-                                Fantastisk! 🚀
-                            </button>
-                        </div>
-                    </div>
+                        <button
+                            onClick={() => {
+                                setPendingGangemon(prev => prev.slice(1));
+                                setShowNewGangemon(prev => prev && pendingGangemon.length - 1 > 0);
+                            }}
+                            className="bg-white text-purple-600 px-6 py-3 rounded-xl font-bold text-lg hover:bg-gray-100 transition-colors"
+                            aria-label="Lukk og gå videre"
+                        >
+                            Fantastisk! 🚀
+                        </button>
+                    </Modal>
                 )}
 
                 {/* Badge Collection Modal */}
@@ -1846,7 +1890,7 @@ const SOUNDS = {
 
                 {/* Enkel Gangemon-oversikt i meny */}
                 {currentView === 'menu' && gangemon.length > 0 && (
-                    <div className="mt-6 bg-white/20 backdrop-blur-sm rounded-2xl p-4 text-white">
+                    <div className="mt-6 bg-white/30 backdrop-blur-sm rounded-2xl p-4 text-white">
                         <div className="flex items-center justify-between">
                             <div className="font-bold">🎮 Gangemon: {gangemon.length}</div>
                             <div className="flex gap-2 flex-wrap">
