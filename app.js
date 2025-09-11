@@ -1571,10 +1571,14 @@ const App = () => {
         }
 
         // Gangemon V1 unlock (Adventure only, 1 per riktig svar)
+        // Kun når en terskel passeres (ikke hver gang noe er «tilgjengelig»)
         if (mode === 'adventure' && isCorrect) {
-            const updatedTotalCorrect = stats.totalCorrect + 1;
-            // Finn første ulåste med unlockAt <= updatedTotalCorrect
-            const next = GANGEMON.find(g => updatedTotalCorrect >= g.unlockAt && !gangemon.includes(g.id));
+            const previousTotal = stats.totalCorrect;
+            const updatedTotalCorrect = previousTotal + 1;
+            // Starter‑commons håndteres separat ved oppstart; ignorer unlockAt === 0 her
+            const next = GANGEMON.find(g => g.unlockAt > 0 &&
+                previousTotal < g.unlockAt && g.unlockAt <= updatedTotalCorrect &&
+                !gangemon.includes(g.id));
             if (next) {
                 setGangemon(prev => [...prev, next.id]);
                 setPendingGangemon(prev => [...prev, next.id]);
